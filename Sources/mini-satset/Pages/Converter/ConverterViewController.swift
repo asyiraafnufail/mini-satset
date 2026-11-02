@@ -124,15 +124,9 @@ final class ConverterViewController: NSViewController {
             formatPopup.addItem(withTitle: fmt.uppercased())
         }
 
-        if cat == .audio {
-            qualityControl.setLabel("Original", forSegment: 0)
-            qualityControl.setLabel("256 kbps", forSegment: 1)
-            qualityControl.setLabel("128 kbps", forSegment: 2)
-        } else {
-            qualityControl.setLabel("High", forSegment: 0)
-            qualityControl.setLabel("Medium", forSegment: 1)
-            qualityControl.setLabel("Compressed", forSegment: 2)
-        }
+        qualityControl.setLabel("High", forSegment: 0)
+        qualityControl.setLabel("Medium", forSegment: 1)
+        qualityControl.setLabel("Compressed", forSegment: 2)
 
         updateState()
     }
@@ -187,7 +181,7 @@ final class ConverterViewController: NSViewController {
                 }
             }
         } else if cat == .audio {
-            let quality = AudioQuality(rawValue: qualityControl.selectedSegment) ?? .original
+            let quality = AudioQuality(rawValue: qualityControl.selectedSegment) ?? .high
             engine.convertAudio(sourceURL: source, targetExt: targetFmt, quality: quality) { [weak self] result in
                 guard let self = self else { return }
                 self.isConverting = false

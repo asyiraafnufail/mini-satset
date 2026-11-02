@@ -39,7 +39,7 @@
 ### 2. Quick File Converter
 - **Native ImageIO Transcoding**: Convert images between **PNG, JPG, HEIC, WEBP, and TIFF** with hardware acceleration.
 - **Strict 1:1 Pixel Protection**: Resolution is strictly preserved—never upscaled. Features quality/compression controls (*High, Medium, Compressed*).
-- **Subprocess Audio Encoding**: Convert audio files between **WAV, MP3, M4A, and CAF** using macOS native CoreAudio utilities (`/usr/bin/afconvert`).
+- **Subprocess Audio Encoding**: Convert audio files (WAV, MP3, M4A, AAC, CAF, AIFF, FLAC) to **M4A, WAV, FLAC, CAF, and AIFF** using macOS native CoreAudio utilities (`/usr/bin/afconvert`).
 - **Single-Slot Output Shelf**: Converted file is presented in a draggable output card ready for immediate export. Conversion remains strictly locked until the slot is cleared.
 
 ### 3. Screen Color Sampler

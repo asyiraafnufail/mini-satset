@@ -34,17 +34,9 @@ enum ImageQuality: Int {
 }
 
 enum AudioQuality: Int {
-    case original = 0
-    case high = 1       // 256k
-    case compressed = 2 // 128k
-
-    var bitrate: Int? {
-        switch self {
-        case .original: return nil
-        case .high: return 256000
-        case .compressed: return 128000
-        }
-    }
+    case high = 0
+    case medium = 1
+    case compressed = 2
 }
 
 enum FileCategory {
@@ -57,7 +49,7 @@ final class ConverterEngine {
     static let shared = ConverterEngine()
 
     private let supportedImageExts = ["png", "jpg", "jpeg", "heic", "webp", "tiff", "tif"]
-    private let supportedAudioExts = ["wav", "mp3", "m4a", "aac", "caf", "aiff"]
+    private let supportedAudioExts = ["wav", "mp3", "m4a", "aac", "caf", "aiff", "flac"]
 
     func category(for url: URL) -> FileCategory {
         let ext = url.pathExtension.lowercased()
@@ -79,7 +71,7 @@ final class ConverterEngine {
             let all = ["jpg", "png", "heic", "webp", "tiff"]
             return all.filter { $0 != current }
         case .audio:
-            let all = ["m4a", "wav", "caf", "mp3"]
+            let all = ["m4a", "wav", "flac", "caf", "aiff"]
             return all.filter { $0 != current }
         case .unsupported:
             return []
@@ -171,23 +163,32 @@ final class ConverterEngine {
                 switch targetExt.lowercased() {
                 case "m4a":
                     args = ["-f", "m4af", "-d", "aac"]
-                    if let br = quality.bitrate {
-                        args += ["-b", "\(br)"]
+                    switch quality {
+                    case .high:
+                        args += ["-q", "127"]
+                    case .medium:
+                        args += ["-q", "96"]
+                    case .compressed:
+                        args += ["-q", "48"]
+                    }
+                case "caf":
+                    args = ["-f", "caff", "-d", "aac"]
+                    switch quality {
+                    case .high:
+                        args += ["-q", "127"]
+                    case .medium:
+                        args += ["-q", "96"]
+                    case .compressed:
+                        args += ["-q", "48"]
                     }
                 case "wav":
                     args = ["-f", "WAVE", "-d", "LEI16"]
-                case "caf":
-                    args = ["-f", "caff", "-d", "aac"]
-                    if let br = quality.bitrate {
-                        args += ["-b", "\(br)"]
-                    }
-                case "mp3":
-                    args = ["-f", "MPG3", "-d", ".mp3"]
-                    if let br = quality.bitrate {
-                        args += ["-b", "\(br)"]
-                    }
+                case "aiff":
+                    args = ["-f", "AIFF", "-d", "BEI16"]
+                case "flac":
+                    args = ["-f", "flac", "-d", "flac"]
                 default:
-                    args = ["-f", "m4af", "-d", "aac"]
+                    args = ["-f", "m4af", "-d", "aac", "-q", "127"]
                 }
 
                 args += [sourceURL.path, destinationURL.path]
