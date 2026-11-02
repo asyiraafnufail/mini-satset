@@ -48,6 +48,16 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
         NSApplication.shared.terminate(nil)
     }
 
+    func menuBarViewDidTriggerDragExpand(_ view: MenuBarView) {
+        panelController.switchToShelfPage()
+        openPanel()
+    }
+
+    func menuBarView(_ view: MenuBarView, didDropFiles urls: [URL]) {
+        panelController.addFilesToShelf(urls)
+        openPanel()
+    }
+
     // MARK: - PanelControllerDelegate
 
     func panelControllerMouseEnter(_ controller: PanelController) {}

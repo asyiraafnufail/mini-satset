@@ -5,6 +5,8 @@ protocol MenuBarViewDelegate: AnyObject {
     func menuBarViewDidTriggerExit(_ view: MenuBarView)
     func menuBarViewDidClickToggle(_ view: MenuBarView)
     func menuBarViewDidRequestQuit(_ view: MenuBarView)
+    func menuBarViewDidTriggerDragExpand(_ view: MenuBarView)
+    func menuBarView(_ view: MenuBarView, didDropFiles urls: [URL])
 }
 
 final class MenuBarView: NSView {
@@ -28,6 +30,7 @@ final class MenuBarView: NSView {
 
     private func setupUI() {
         wantsLayer = true
+        registerForDraggedTypes([.fileURL])
 
         pillLayer.cornerRadius = 5
         pillLayer.masksToBounds = true
@@ -69,6 +72,33 @@ final class MenuBarView: NSView {
         trackingAreaRef = area
     }
 
+    // MARK: - Drag & Drop Support (Spring-loading Shelf)
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let pasteboard = sender.draggingPasteboard
+        guard let types = pasteboard.types, types.contains(.fileURL) else {
+            return []
+        }
+
+        setHighlight(true, animated: true)
+        delegate?.menuBarViewDidTriggerDragExpand(self)
+        return .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        return .copy
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let pasteboard = sender.draggingPasteboard
+        guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], !urls.isEmpty else {
+            return false
+        }
+
+        delegate?.menuBarView(self, didDropFiles: urls)
+        return true
+    }
+
     // MARK: - Mouse Events (Instant Response)
 
     override func mouseEntered(with event: NSEvent) {
@@ -92,7 +122,7 @@ final class MenuBarView: NSView {
         menu.addItem(NSMenuItem.separator())
 
         let quitItem = NSMenuItem(
-            title: "Keluar / Quit",
+            title: "Quit mini-satset",
             action: #selector(handleQuit),
             keyEquivalent: "q"
         )

@@ -43,7 +43,7 @@ final class SpeedTestEngine {
         process.standardError = Pipe()
         currentProcess = process
 
-        onProgress("Menguji jaringan Apple CDN...")
+        onProgress("Testing network via Apple CDN...")
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             do {
@@ -61,7 +61,7 @@ final class SpeedTestEngine {
                     }
                 } else {
                     struct NetworkError: LocalizedError {
-                        var errorDescription: String? { "Gagal menguji jaringan. Periksa koneksi internet." }
+                        var errorDescription: String? { "Failed to test network. Check your internet connection." }
                     }
                     DispatchQueue.main.async {
                         onCompletion(.failure(NetworkError()))

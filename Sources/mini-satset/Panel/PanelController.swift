@@ -10,6 +10,7 @@ protocol PanelControllerDelegate: AnyObject {
 final class TrackingVisualEffectView: NSVisualEffectView {
     var onMouseEnter: (() -> Void)?
     var onMouseExit: (() -> Void)?
+    var onFilesDropped: (([URL]) -> Void)?
     private var trackingAreaRef: NSTrackingArea?
     private var lastMaskSize: NSSize = .zero
 
@@ -28,10 +29,32 @@ final class TrackingVisualEffectView: NSVisualEffectView {
         blendingMode = .behindWindow
         state = .active
         wantsLayer = true
+        registerForDraggedTypes([.fileURL])
         layer?.cornerRadius = 16
         layer?.masksToBounds = true
         layer?.borderWidth = 0.5
         layer?.borderColor = NSColor.separatorColor.cgColor
+    }
+
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        let pasteboard = sender.draggingPasteboard
+        guard let types = pasteboard.types, types.contains(.fileURL) else {
+            return []
+        }
+        return .copy
+    }
+
+    override func draggingUpdated(_ sender: NSDraggingInfo) -> NSDragOperation {
+        return .copy
+    }
+
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let pasteboard = sender.draggingPasteboard
+        guard let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], !urls.isEmpty else {
+            return false
+        }
+        onFilesDropped?(urls)
+        return true
     }
 
     override func layout() {
@@ -137,6 +160,9 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             guard let self = self else { return }
             self.delegate?.panelControllerMouseExit(self)
         }
+        visualEffectView.onFilesDropped = { [weak self] urls in
+            self?.addFilesToShelf(urls)
+        }
 
         let separator = NSBox(frame: NSRect(x: 0, y: 293, width: 320, height: 1))
         separator.boxType = .separator
@@ -201,6 +227,19 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         containerView.addSubview(currentVC.view)
     }
 
+    func switchToShelfPage() {
+        guard activePageIndex != 0 else { return }
+        displayPage(at: 0, animated: false)
+    }
+
+    func addFilesToShelf(_ urls: [URL]) {
+        for url in urls {
+            ShelfItemStore.shared.addFileURL(url)
+        }
+        switchToShelfPage()
+        shelfVC.refreshUI()
+    }
+
     // MARK: - Show & Hide (Deterministic Hardware-Timed Interpolation)
 
     func show(relativeTo statusButton: NSView) {
@@ -224,10 +263,10 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
         var originX = buttonScreenRect.midX - (panelWidth / 2)
         originX = max(screen.visibleFrame.minX + 8, min(originX, screen.visibleFrame.maxX - panelWidth - 8))
-        let targetY = screen.visibleFrame.maxY - panelHeight - 6
+        let targetY = screen.visibleFrame.maxY - panelHeight - 2
 
         let finalFrame = NSRect(x: originX, y: targetY, width: panelWidth, height: panelHeight)
-        let startY = targetY + 8.0
+        let startY = targetY + 6.0
 
         panel.setFrame(NSRect(x: originX, y: startY, width: panelWidth, height: panelHeight), display: false)
         panel.alphaValue = 0.0
@@ -246,7 +285,7 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             let progress = min(1.0, max(0.0, elapsed / duration))
             let eased = self.easeInOutCubic(CGFloat(progress))
 
-            let currentY = startY - (8.0 * eased)
+            let currentY = startY - (6.0 * eased)
             self.panel.setFrame(NSRect(x: originX, y: currentY, width: panelWidth, height: panelHeight), display: false)
             self.panel.alphaValue = eased
 
@@ -289,7 +328,7 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             let progress = min(1.0, max(0.0, elapsed / duration))
             let eased = self.easeInOutCubic(CGFloat(progress))
 
-            let currentY = startY + (8.0 * eased)
+            let currentY = startY + (6.0 * eased)
             self.panel.setFrame(NSRect(x: currentFrame.origin.x, y: currentY, width: currentFrame.width, height: currentFrame.height), display: false)
             self.panel.alphaValue = startAlpha * (1.0 - eased)
 

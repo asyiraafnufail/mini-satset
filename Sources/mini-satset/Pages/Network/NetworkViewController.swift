@@ -5,8 +5,8 @@ final class NetworkViewController: NSViewController {
 
     private let dlValueLabel = NSTextField(labelWithString: "--")
     private let ulValueLabel = NSTextField(labelWithString: "--")
-    private let rpmValueLabel = NSTextField(labelWithString: "RPM: --")
-    private let statusLabel = NSTextField(labelWithString: "Siap menguji kecepatan")
+    private let rpmValueLabel = NSTextField(labelWithString: "Responsiveness: -- RPM")
+    private let statusLabel = NSTextField(labelWithString: "Ready to test network speed")
     private let actionButton = NSButton()
     private let spinner = NSProgressIndicator()
 
@@ -78,7 +78,7 @@ final class NetworkViewController: NSViewController {
 
         // Action Button
         actionButton.frame = NSRect(x: 70, y: 24, width: 180, height: 32)
-        actionButton.title = "Mulai Tes Kecepatan"
+        actionButton.title = "Start Speed Test"
         actionButton.bezelStyle = .rounded
         actionButton.target = self
         actionButton.action = #selector(handleActionClick)
@@ -102,10 +102,10 @@ final class NetworkViewController: NSViewController {
     @objc private func handleActionClick() {
         actionButton.isEnabled = false
         spinner.startAnimation(nil)
-        statusLabel.stringValue = "Menjalankan networkQuality..."
+        statusLabel.stringValue = "Running networkQuality..."
         dlValueLabel.stringValue = "--"
         ulValueLabel.stringValue = "--"
-        rpmValueLabel.stringValue = "RPM: mengukur..."
+        rpmValueLabel.stringValue = "RPM: measuring..."
 
         engine.startTest(
             onProgress: { [weak self] msg in
@@ -120,8 +120,8 @@ final class NetworkViewController: NSViewController {
                 case .success(let data):
                     self.dlValueLabel.stringValue = String(format: "%.1f", data.downloadMbps)
                     self.ulValueLabel.stringValue = String(format: "%.1f", data.uploadMbps)
-                    self.rpmValueLabel.stringValue = "Responsivitas: \(data.rpm) RPM • Ping: \(data.pingMs) ms"
-                    self.statusLabel.stringValue = "Pengujian selesai."
+                    self.rpmValueLabel.stringValue = "Responsiveness: \(data.rpm) RPM • Latency: \(data.pingMs) ms"
+                    self.statusLabel.stringValue = "Test completed."
                 case .failure(let error):
                     self.statusLabel.stringValue = error.localizedDescription
                 }

@@ -7,7 +7,7 @@ final class ColorSamplerViewController: NSViewController {
     private let hexLabel = NSTextField(labelWithString: "#------")
     private let rgbLabel = NSTextField(labelWithString: "rgb(-, -, -)")
     private let hslLabel = NSTextField(labelWithString: "hsl(-, -%, -%)")
-    private let toastLabel = NSTextField(labelWithString: "Klik tombol untuk ambil warna layar")
+    private let toastLabel = NSTextField(labelWithString: "Click button to sample screen color")
     private let recentStack = NSStackView()
 
     override func loadView() {
@@ -18,7 +18,7 @@ final class ColorSamplerViewController: NSViewController {
     private func setupUI() {
         // Sample Button
         let pickBtn = NSButton(frame: NSRect(x: 16, y: 246, width: 288, height: 32))
-        pickBtn.title = " Ambil Warna Layar (Loupe)"
+        pickBtn.title = " Pick Screen Color (Loupe)"
         let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
         pickBtn.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: nil)?
             .withSymbolConfiguration(config)
@@ -59,20 +59,20 @@ final class ColorSamplerViewController: NSViewController {
         card.addSubview(hslLabel)
 
         // Clickable copy buttons
-        let copyHexBtn = makeMiniCopyButton(title: "Salin HEX", action: #selector(handleCopyHex))
+        let copyHexBtn = makeMiniCopyButton(title: "Copy HEX", action: #selector(handleCopyHex))
         copyHexBtn.frame = NSRect(x: 14, y: 14, width: 80, height: 24)
         card.addSubview(copyHexBtn)
 
-        let copyRgbBtn = makeMiniCopyButton(title: "Salin RGB", action: #selector(handleCopyRgb))
+        let copyRgbBtn = makeMiniCopyButton(title: "Copy RGB", action: #selector(handleCopyRgb))
         copyRgbBtn.frame = NSRect(x: 102, y: 14, width: 80, height: 24)
         card.addSubview(copyRgbBtn)
 
-        let copyHslBtn = makeMiniCopyButton(title: "Salin HSL", action: #selector(handleCopyHsl))
+        let copyHslBtn = makeMiniCopyButton(title: "Copy HSL", action: #selector(handleCopyHsl))
         copyHslBtn.frame = NSRect(x: 190, y: 14, width: 80, height: 24)
         card.addSubview(copyHslBtn)
 
         // Recent Colors Section
-        let recentTitle = NSTextField(labelWithString: "Riwayat Terakhir:")
+        let recentTitle = NSTextField(labelWithString: "Recent:")
         recentTitle.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         recentTitle.textColor = .tertiaryLabelColor
         recentTitle.frame = NSRect(x: 16, y: 46, width: 100, height: 14)
@@ -120,7 +120,7 @@ final class ColorSamplerViewController: NSViewController {
         // Auto copy HEX to pasteboard
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(formats.hex, forType: .string)
-        showToast("Auto-copy: \(formats.hex) ke clipboard!")
+        showToast("Auto-copied \(formats.hex) to clipboard!")
 
         // Update recents
         if !recentColors.contains(where: { ColorFormatHelper.formats(from: $0).hex == formats.hex }) {
@@ -161,17 +161,17 @@ final class ColorSamplerViewController: NSViewController {
 
     @objc private func handleCopyHex() {
         guard hexLabel.stringValue != "#------" else { return }
-        copyText(hexLabel.stringValue, message: "HEX disalin!")
+        copyText(hexLabel.stringValue, message: "HEX copied!")
     }
 
     @objc private func handleCopyRgb() {
         guard rgbLabel.stringValue != "rgb(-, -, -)" else { return }
-        copyText(rgbLabel.stringValue, message: "RGB disalin!")
+        copyText(rgbLabel.stringValue, message: "RGB copied!")
     }
 
     @objc private func handleCopyHsl() {
         guard hslLabel.stringValue != "hsl(-, -%, -%)" else { return }
-        copyText(hslLabel.stringValue, message: "HSL disalin!")
+        copyText(hslLabel.stringValue, message: "HSL copied!")
     }
 
     private func copyText(_ text: String, message: String) {
@@ -183,7 +183,7 @@ final class ColorSamplerViewController: NSViewController {
     private func showToast(_ message: String) {
         toastLabel.stringValue = message
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            self?.toastLabel.stringValue = "Klik tombol untuk ambil warna layar"
+            self?.toastLabel.stringValue = "Click button to sample screen color"
         }
     }
 }

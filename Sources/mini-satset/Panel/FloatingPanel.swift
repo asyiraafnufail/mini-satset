@@ -32,6 +32,18 @@ final class FloatingPanel: NSPanel {
         return false
     }
 
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .leftMouseDown || event.type == .rightMouseDown {
+            if !NSApp.isActive {
+                NSApp.activate(ignoringOtherApps: true)
+            }
+            if !isKeyWindow {
+                makeKey()
+            }
+        }
+        super.sendEvent(event)
+    }
+
     override func cancelOperation(_ sender: Any?) {
         panelDelegate?.floatingPanelDidRequestClose(self)
     }

@@ -68,7 +68,7 @@ final class ShelfItemStore {
         guard !trimmed.isEmpty else { return }
         purgeExpired()
         textItems.insert(ShelfText(content: trimmed), at: 0)
-        if textItems.count > 20 {
+        if textItems.count > 4 {
             textItems.removeLast()
         }
     }
@@ -78,7 +78,7 @@ final class ShelfItemStore {
         // Check duplicate
         if !fileItems.contains(where: { $0.url == url }) {
             fileItems.insert(ShelfFile(url: url), at: 0)
-            if fileItems.count > 10 {
+            if fileItems.count > 4 {
                 fileItems.removeLast()
             }
         }
