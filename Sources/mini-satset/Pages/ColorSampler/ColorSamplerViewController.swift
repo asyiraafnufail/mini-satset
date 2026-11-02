@@ -1,14 +1,14 @@
 import AppKit
 
 final class ColorSamplerViewController: NSViewController {
-    private var recentColors: [NSColor] = []
+    private var recentColors: [(color: NSColor, hex: String)] = []
 
     private let previewSwatch = NSView()
     private let hexLabel = NSTextField(labelWithString: "#------")
     private let rgbLabel = NSTextField(labelWithString: "rgb(-, -, -)")
     private let hslLabel = NSTextField(labelWithString: "hsl(-, -%, -%)")
     private let toastLabel = NSTextField(labelWithString: "Click button to sample screen color")
-    private let recentStack = NSStackView()
+    private let recentContainer = NSView()
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 290))
@@ -83,10 +83,8 @@ final class ColorSamplerViewController: NSViewController {
         recentTitle.frame = NSRect(x: 12, y: 64, width: 48, height: 16)
         view.addSubview(recentTitle)
 
-        recentStack.orientation = .horizontal
-        recentStack.spacing = 6
-        recentStack.frame = NSRect(x: 64, y: 62, width: 244, height: 20)
-        view.addSubview(recentStack)
+        recentContainer.frame = NSRect(x: 64, y: 62, width: 244, height: 20)
+        view.addSubview(recentContainer)
 
         // Toast feedback (12pt from bottom edge)
         toastLabel.font = NSFont.systemFont(ofSize: 10, weight: .medium)
@@ -132,8 +130,8 @@ final class ColorSamplerViewController: NSViewController {
         showToast("Auto-copied \(formats.hex) to clipboard!")
 
         // Update recents
-        if !recentColors.contains(where: { ColorFormatHelper.formats(from: $0).hex == formats.hex }) {
-            recentColors.insert(color, at: 0)
+        if !recentColors.contains(where: { $0.hex == formats.hex }) {
+            recentColors.insert((color: color, hex: formats.hex), at: 0)
             if recentColors.count > 5 {
                 recentColors.removeLast()
             }
@@ -142,29 +140,32 @@ final class ColorSamplerViewController: NSViewController {
     }
 
     private func refreshRecentSwatches() {
-        recentStack.subviews.forEach { $0.removeFromSuperview() }
-        for color in recentColors {
+        recentContainer.subviews.forEach { $0.removeFromSuperview() }
+        let size: CGFloat = 18
+        let spacing: CGFloat = 6
+
+        for (index, item) in recentColors.enumerated() {
             let swatch = NSButton()
             swatch.title = ""
             swatch.isBordered = false
             swatch.wantsLayer = true
             swatch.layer?.cornerRadius = 4
-            swatch.layer?.backgroundColor = color.cgColor
+            swatch.layer?.backgroundColor = item.color.cgColor
             swatch.layer?.borderWidth = 1
             swatch.layer?.borderColor = NSColor.separatorColor.cgColor
             swatch.target = self
             swatch.action = #selector(handleRecentClick(_:))
-            swatch.identifier = NSUserInterfaceItemIdentifier(ColorFormatHelper.formats(from: color).hex)
+            swatch.identifier = NSUserInterfaceItemIdentifier(item.hex)
 
-            swatch.widthAnchor.constraint(equalToConstant: 18).isActive = true
-            swatch.heightAnchor.constraint(equalToConstant: 18).isActive = true
-            recentStack.addArrangedSubview(swatch)
+            let x = CGFloat(index) * (size + spacing)
+            swatch.frame = NSRect(x: x, y: 1, width: size, height: size)
+            recentContainer.addSubview(swatch)
         }
     }
 
     @objc private func handleRecentClick(_ sender: NSButton) {
         guard let hex = sender.identifier?.rawValue,
-              let matched = recentColors.first(where: { ColorFormatHelper.formats(from: $0).hex == hex }) else { return }
+              let matched = recentColors.first(where: { $0.hex == hex })?.color else { return }
         applyColor(matched)
     }
 

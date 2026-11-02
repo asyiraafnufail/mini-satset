@@ -310,10 +310,7 @@ final class ConverterDropZoneView: NSView {
         var sizeString = "File"
         if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let size = attrs[.size] as? Int64 {
-            let formatter = ByteCountFormatter()
-            formatter.allowedUnits = [.useMB, .useKB, .useBytes]
-            formatter.countStyle = .file
-            sizeString = formatter.string(fromByteCount: size)
+            sizeString = AppFormatters.fileSize.string(fromByteCount: size)
         }
 
         let metaLabel = NSTextField(labelWithString: "\(url.pathExtension.uppercased()) • \(sizeString)")
@@ -431,10 +428,7 @@ final class ConverterOutputShelfView: NSView, NSDraggingSource {
         var newSizeStr = "File"
         if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let size = attrs[.size] as? Int64 {
-            let formatter = ByteCountFormatter()
-            formatter.allowedUnits = [.useMB, .useKB, .useBytes]
-            formatter.countStyle = .file
-            newSizeStr = formatter.string(fromByteCount: size)
+            newSizeStr = AppFormatters.fileSize.string(fromByteCount: size)
         }
 
         let metaLabel = NSTextField(labelWithString: "Ready • \(newSizeStr) • Drag out")

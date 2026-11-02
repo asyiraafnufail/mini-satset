@@ -1,5 +1,14 @@
 import Foundation
 
+enum AppFormatters {
+    static let fileSize: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useMB, .useKB, .useBytes]
+        formatter.countStyle = .file
+        return formatter
+    }()
+}
+
 struct ShelfText: Identifiable, Equatable {
     let id: UUID
     let content: String
@@ -36,10 +45,7 @@ struct ShelfFile: Identifiable, Equatable {
 
         if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
            let size = attrs[.size] as? Int64 {
-            let formatter = ByteCountFormatter()
-            formatter.allowedUnits = [.useMB, .useKB, .useBytes]
-            formatter.countStyle = .file
-            self.fileSizeFormatted = formatter.string(fromByteCount: size)
+            self.fileSizeFormatted = AppFormatters.fileSize.string(fromByteCount: size)
         } else {
             self.fileSizeFormatted = "File"
         }

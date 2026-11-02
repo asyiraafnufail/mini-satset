@@ -6,6 +6,7 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     private let panelController = PanelController()
 
     private var hoverCheckTimer: Timer?
+    private var cachedActiveZone: NSRect = .zero
 
     override init() {
         super.init()
@@ -76,13 +77,29 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
         guard !panelController.isVisible else { return }
         menuBarView.setHighlight(true, animated: true)
         panelController.show(relativeTo: menuBarView)
+        updateActiveZone()
         startHoverCheck()
     }
 
     private func dismissAll() {
         stopHoverCheck()
+        cachedActiveZone = .zero
         menuBarView.setHighlight(false, animated: true)
         panelController.hide()
+    }
+
+    private func updateActiveZone() {
+        guard let buttonWindow = menuBarView.window else { return }
+        let buttonBounds = menuBarView.bounds
+        let buttonScreenRect = buttonWindow.convertToScreen(menuBarView.convert(buttonBounds, to: nil))
+        let panelFrame = panelController.currentFrame
+
+        let minX = min(buttonScreenRect.minX, panelFrame.minX) - 8
+        let maxX = max(buttonScreenRect.maxX, panelFrame.maxX) + 8
+        let minY = min(buttonScreenRect.minY, panelFrame.minY) - 8
+        let maxY = max(buttonScreenRect.maxY, panelFrame.maxY) + 8
+
+        cachedActiveZone = NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
     }
 
     // MARK: - Active Hover Monitor (Zero Delay on Exit, Zero CPU when Idle)
@@ -108,26 +125,7 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
             return
         }
 
-        let mousePos = NSEvent.mouseLocation
-
-        guard let buttonWindow = menuBarView.window else {
-            dismissAll()
-            return
-        }
-
-        let buttonBounds = menuBarView.bounds
-        let buttonScreenRect = buttonWindow.convertToScreen(menuBarView.convert(buttonBounds, to: nil))
-        let panelFrame = panelController.currentFrame
-
-        // Combined bounding area bridging menu bar icon down to the panel with 8pt margin
-        let minX = min(buttonScreenRect.minX, panelFrame.minX) - 8
-        let maxX = max(buttonScreenRect.maxX, panelFrame.maxX) + 8
-        let minY = min(buttonScreenRect.minY, panelFrame.minY) - 8
-        let maxY = max(buttonScreenRect.maxY, panelFrame.maxY) + 8
-
-        let activeZone = NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
-
-        if !activeZone.contains(mousePos) {
+        if !cachedActiveZone.contains(NSEvent.mouseLocation) {
             dismissAll()
         }
     }

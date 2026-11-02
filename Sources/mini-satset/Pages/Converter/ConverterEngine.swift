@@ -95,13 +95,14 @@ final class ConverterEngine {
         completion: @escaping (Result<URL, Error>) -> Void
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let imageSource = CGImageSourceCreateWithURL(sourceURL as CFURL, nil) else {
+            let readOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+            guard let imageSource = CGImageSourceCreateWithURL(sourceURL as CFURL, readOptions) else {
                 DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
                 return
             }
 
             guard CGImageSourceGetCount(imageSource) > 0,
-                  let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else {
+                  let image = CGImageSourceCreateImageAtIndex(imageSource, 0, readOptions) else {
                 DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
                 return
             }
