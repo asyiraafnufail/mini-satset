@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/mockup_preview.png" width="100%" alt="mini-satset 5-page preview showcase" style="border-radius: 16px;" />
+  <img src="docs/images/mockup_v1.1.0.png" width="100%" alt="mini-satset 5-page preview showcase" style="border-radius: 16px;" />
 </p>
 
 ---
