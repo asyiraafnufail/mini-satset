@@ -64,7 +64,7 @@
 - **Pin Mode (Always on Top)**: Click the pin button (`pin`/`pin.fill`) in the top-right header to keep the panel open while multitasking, dragging files across workspaces, or taking notes. When pinned, background hover polling timers stop completely (**0.0% CPU**).
 - **Zero-Delay Active Zone Monitoring**: Hover check tracks cursor presence within an expanded bounding zone, closing instantly when leaving without artificial delay.
 - **Spring-Loaded Drag Expansion**: Dragging a file over the menu bar item expands the panel while respecting your active tab (dropping into Converter, QR, OCR, or Shelf accordingly).
-- **Right-Click Context Menu**: Right-click the status item to toggle **Launch at Login** (`SMAppService`) or quit cleanly (`Cmd+Q`).
+- **Right-Click Context Menu**: Right-click the status item to toggle **Launch at Login** (`SMAppService`), run **Uninstall mini-satset...** (cleanly purges caches, unregisters login items, and moves app to Trash), or quit cleanly (`Cmd+Q`).
 
 ---
 

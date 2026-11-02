@@ -151,6 +151,15 @@ final class MenuBarView: NSView {
         menu.addItem(launchItem)
         menu.addItem(NSMenuItem.separator())
 
+        let uninstallItem = NSMenuItem(
+            title: "Uninstall mini-satset...",
+            action: #selector(handleUninstall),
+            keyEquivalent: ""
+        )
+        uninstallItem.target = self
+        menu.addItem(uninstallItem)
+        menu.addItem(NSMenuItem.separator())
+
         let quitItem = NSMenuItem(
             title: "Quit mini-satset",
             action: #selector(handleQuit),
@@ -165,6 +174,47 @@ final class MenuBarView: NSView {
     @objc private func handleToggleLaunchAtLogin(_ sender: NSMenuItem) {
         LaunchAtLogin.toggle()
         sender.state = LaunchAtLogin.isEnabled ? .on : .off
+    }
+
+    @objc private func handleUninstall() {
+        NSApp.activate(ignoringOtherApps: true)
+        let alert = NSAlert()
+        alert.messageText = "Uninstall mini-satset?"
+        alert.informativeText = "This will remove mini-satset from Launch at Login, clean up all preference caches, move the app to the Trash, and quit."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Uninstall")
+        alert.addButton(withTitle: "Cancel")
+
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+
+        // 1. Unregister LaunchAtLogin
+        if LaunchAtLogin.isEnabled {
+            LaunchAtLogin.toggle()
+        }
+
+        // 2. Clean up cache, preferences, and saved state
+        let fm = FileManager.default
+        let home = fm.homeDirectoryForCurrentUser
+        let bundleID = Bundle.main.bundleIdentifier ?? "com.rafacnkz.mini-satset"
+
+        let pathsToDelete: [URL] = [
+            home.appendingPathComponent("Library/Preferences/\(bundleID).plist"),
+            home.appendingPathComponent("Library/Caches/\(bundleID)"),
+            home.appendingPathComponent("Library/Saved Application State/\(bundleID).savedState")
+        ]
+
+        for path in pathsToDelete {
+            try? fm.removeItem(at: path)
+        }
+
+        // 3. Move .app bundle to Trash if installed
+        let bundleURL = Bundle.main.bundleURL
+        if bundleURL.pathExtension.lowercased() == "app" {
+            try? fm.trashItem(at: bundleURL, resultingItemURL: nil)
+        }
+
+        // 4. Terminate cleanly
+        NSApplication.shared.terminate(nil)
     }
 
     @objc private func handleQuit() {

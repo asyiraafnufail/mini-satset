@@ -121,6 +121,7 @@ final class ColorSamplerViewController: NSViewController {
     }
 
     @objc private func handlePickColor() {
+        guard !isSamplingColor else { return }
         isSamplingColor = true
         let sampler = NSColorSampler()
         sampler.show { [weak self] selectedColor in

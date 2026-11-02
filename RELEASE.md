@@ -28,6 +28,9 @@
 - **Zero Idle CPU**: Complete elimination of continuous timers; all toast resets and hover monitors are invalidatable and stop when idle or pinned.
 - **Lazy Drag Export**: QR image PNGs are only written to disk if an actual drag gesture to Finder is initiated.
 
+#### 5. Native 1-Click Complete Uninstaller
+- Right-click the menu bar icon and select **Uninstall mini-satset...** to cleanly unregister login items (`SMAppService`), purge preference plists and caches, move the `.app` bundle to Trash (`FileManager.default.trashItem`), and quit cleanly with zero residual files on your Mac.
+
 ---
 
 ### Core Suite (All 5 Pages)

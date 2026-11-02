@@ -248,6 +248,7 @@ final class OCRViewController: NSViewController {
     }
 
     @objc private func handleSnipClick() {
+        guard !isSnipping else { return }
         delegate?.ocrViewControllerDidRequestSnip(self)
     }
 
