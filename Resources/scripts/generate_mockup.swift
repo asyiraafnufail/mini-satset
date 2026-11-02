@@ -200,7 +200,7 @@ func drawPanelMockup(context: CGContext, x: CGFloat, y: CGFloat, width: CGFloat,
         // 3. Text snippets cards (y = y + 74, h = 232)
         let snippets = [
             "https://apple.com/macos/sequoia",
-            "git commit -m 'release: v1.0.0 mini-satset'",
+            "git commit -m 'release: v1.1.0 mini-satset'",
             "SATSET-PROMO-2026-KEY"
         ]
         for (idx, snip) in snippets.enumerated() {
