@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS%2013%2B%20(Ventura%20%7C%20Sonoma%20%7C%20Sequoia%2B)-black?logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/platform-macOS%2013%2B%20(Ventura%20%E2%86%92%20Sequoia%2B)-black?logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/arch-Universal%202%20(Apple%20Silicon%20%7C%20Intel)-007ACC" alt="Architecture" />
   <img src="https://img.shields.io/badge/language-Swift-FA7343?logo=swift&logoColor=white" alt="Language" />
   <img src="https://img.shields.io/badge/memory-%3C%2012%20MB%20RAM-44cc11" alt="Memory" />
