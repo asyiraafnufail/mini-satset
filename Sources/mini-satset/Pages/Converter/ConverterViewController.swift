@@ -118,7 +118,6 @@ final class ConverterViewController: NSViewController {
             formatPopup.addItem(withTitle: fmt.uppercased())
         }
 
-        let cat = engine.category(for: url)
         if cat == .audio {
             qualityControl.setLabel("Original", forSegment: 0)
             qualityControl.setLabel("256 kbps", forSegment: 1)

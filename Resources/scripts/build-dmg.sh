@@ -10,6 +10,14 @@ SWIFT_FILES=$(find Sources -name "*.swift")
 echo "=== Compiling with swiftc ==="
 mkdir -p bin dist "${APP_BUNDLE}/Contents/MacOS" "${APP_BUNDLE}/Contents/Resources"
 
+# Ensure icon exists
+if [ ! -f "Resources/AppIcon.icns" ]; then
+    echo "Generating AppIcon.icns..."
+    swift Resources/scripts/generate_icon.swift Resources/icon_1024.png
+    chmod +x Resources/scripts/make-icns.sh
+    ./Resources/scripts/make-icns.sh
+fi
+
 # Try Universal Binary (arm64 + x86_64)
 if swiftc -O -whole-module-optimization -target arm64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-arm64 2>/dev/null && \
    swiftc -O -whole-module-optimization -target x86_64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-x86 2>/dev/null; then

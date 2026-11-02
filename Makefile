@@ -20,6 +20,7 @@ run: build
 	./bin/$(APP_NAME)
 
 app: build
+	@if [ ! -f Resources/AppIcon.icns ]; then $(MAKE) icon; fi
 	@mkdir -p $(APP_BUNDLE)/Contents/MacOS
 	@mkdir -p $(APP_BUNDLE)/Contents/Resources
 	cp bin/$(APP_NAME) $(APP_BUNDLE)/Contents/MacOS/
