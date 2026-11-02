@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-macOS%2013%2B%20(Ventura--Sequoia)-black?logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/platform-macOS%2013%2B%20(Ventura%20%7C%20Sonoma%20%7C%20Sequoia%2B)-black?logo=apple&logoColor=white" alt="Platform" />
   <img src="https://img.shields.io/badge/arch-Universal%202%20(Apple%20Silicon%20%7C%20Intel)-007ACC" alt="Architecture" />
   <img src="https://img.shields.io/badge/language-Swift-FA7343?logo=swift&logoColor=white" alt="Language" />
   <img src="https://img.shields.io/badge/memory-%3C%2012%20MB%20RAM-44cc11" alt="Memory" />
@@ -71,15 +71,16 @@
 
 ## System Requirements
 
-- **macOS Version**: macOS 13.0 (Ventura), macOS 14.0 (Sonoma), macOS 15.0 (Sequoia), or later.
-- **Hardware**: Apple Silicon (`arm64`) or Intel (`x86_64`).
+- **macOS Version**: macOS 13.0 (Ventura), macOS 14.0 (Sonoma), macOS 15.0 (Sequoia), and newer (macOS 15+ fully supported & tested).
+- **Forward Compatibility**: Built exclusively with stable, public Apple SDK APIs (`AppKit`, `ImageIO`, `CoreAudio`, `ServiceManagement`) ensuring seamless execution across future macOS versions.
+- **Hardware Architecture**: Universal 2 binary — native on Apple Silicon (M1/M2/M3/M4) and Intel (`x86_64`).
 
 ---
 
 ## Installation
 
 ### Option 1: Pre-built DMG Installer (Recommended)
-1. Download `mini-satset-1.0.0.dmg` from the [Releases](#) page.
+1. Download `mini-satset-1.0.0.dmg` from the [Releases](https://github.com/asyiraafnufail/mini-satset/releases) page.
 2. Open the DMG and drag **mini-satset** into your **Applications** folder.
 3. Open `mini-satset` from Applications.
    > **Note on First Launch (Gatekeeper)**: Because this app is self-built without a paid Apple Developer certificate, right-click (or Control-click) `mini-satset` in Applications and select **Open**, then click **Open** in the confirmation dialog.
@@ -92,7 +93,7 @@ xcode-select --install
 
 Clone the repository and build:
 ```bash
-git clone https://github.com/your-username/mini-satset.git
+git clone https://github.com/asyiraafnufail/mini-satset.git
 cd mini-satset
 
 # 1. Generate AppIcon.icns
