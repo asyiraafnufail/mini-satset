@@ -92,6 +92,7 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
     private lazy var pages: [NSViewController] = [shelfVC, networkVC, colorSamplerVC]
     private(set) var activePageIndex: Int = 0
+    private var isSwitchingPage: Bool = false
 
     // MARK: - Animation State Machine & Dedicated Timer Animator
 
@@ -126,6 +127,7 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
     private func setupViews() {
         visualEffectView.frame = NSRect(x: 0, y: 0, width: 320, height: 332)
+        containerView.wantsLayer = true
 
         visualEffectView.onMouseEnter = { [weak self] in
             guard let self = self else { return }
@@ -155,12 +157,14 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     // MARK: - Page Indicator Delegate
 
     func pageIndicator(_ indicator: PageIndicatorView, didSelectPageAt index: Int) {
-        guard index != activePageIndex else { return }
+        guard index != activePageIndex, !isSwitchingPage else { return }
         switchPage(to: index)
     }
 
     private func switchPage(to newIndex: Int) {
-        guard newIndex >= 0 && newIndex < pages.count else { return }
+        guard newIndex >= 0 && newIndex < pages.count, !isSwitchingPage else { return }
+        isSwitchingPage = true
+
         let oldVC = pages[activePageIndex]
         let newVC = pages[newIndex]
         let isMovingRight = newIndex > activePageIndex
@@ -180,10 +184,11 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             oldVC.view.animator().frame.origin.x = -offset
             newVC.view.animator().alphaValue = 1.0
             newVC.view.animator().frame.origin.x = 0
-        } completionHandler: {
+        } completionHandler: { [weak self] in
             oldVC.view.removeFromSuperview()
             oldVC.view.frame.origin.x = 0
             oldVC.view.alphaValue = 1.0
+            self?.isSwitchingPage = false
         }
     }
 
