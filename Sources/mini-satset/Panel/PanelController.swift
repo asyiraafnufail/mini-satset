@@ -115,7 +115,6 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
     private lazy var pages: [NSViewController] = [shelfVC, networkVC, colorSamplerVC]
     private(set) var activePageIndex: Int = 0
-    private var isSwitchingPage: Bool = false
 
     // MARK: - Animation State Machine & Dedicated Timer Animator
 
@@ -183,39 +182,21 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     // MARK: - Page Indicator Delegate
 
     func pageIndicator(_ indicator: PageIndicatorView, didSelectPageAt index: Int) {
-        guard index != activePageIndex, !isSwitchingPage else { return }
+        guard index != activePageIndex else { return }
         switchPage(to: index)
     }
 
     private func switchPage(to newIndex: Int) {
-        guard newIndex >= 0 && newIndex < pages.count, !isSwitchingPage else { return }
-        isSwitchingPage = true
+        guard newIndex >= 0 && newIndex < pages.count, newIndex != activePageIndex else { return }
 
         let oldVC = pages[activePageIndex]
         let newVC = pages[newIndex]
-        let isMovingRight = newIndex > activePageIndex
         activePageIndex = newIndex
 
+        oldVC.view.removeFromSuperview()
         newVC.view.frame = containerView.bounds
+        newVC.view.alphaValue = 1.0
         containerView.addSubview(newVC.view)
-
-        let offset: CGFloat = isMovingRight ? 24 : -24
-        newVC.view.frame.origin.x = offset
-        newVC.view.alphaValue = 0.0
-
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.20
-            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.25, 0.1, 0.25, 1.0)
-            oldVC.view.animator().alphaValue = 0.0
-            oldVC.view.animator().frame.origin.x = -offset
-            newVC.view.animator().alphaValue = 1.0
-            newVC.view.animator().frame.origin.x = 0
-        } completionHandler: { [weak self] in
-            oldVC.view.removeFromSuperview()
-            oldVC.view.frame.origin.x = 0
-            oldVC.view.alphaValue = 1.0
-            self?.isSwitchingPage = false
-        }
     }
 
     private func displayPage(at index: Int, animated: Bool) {
