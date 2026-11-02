@@ -18,14 +18,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/mockup_preview.png" width="100%" alt="mini-satset 3-page preview showcase" style="border-radius: 16px;" />
+  <img src="docs/images/mockup_preview.png" width="100%" alt="mini-satset 5-page preview showcase" style="border-radius: 16px;" />
 </p>
 
 ---
 
 ## Overview
 
-**mini-satset** is an ultra-fast, unobtrusive menu bar companion for macOS designed to replace bloated Electron utilities. It resides permanently in your status bar (`bolt.fill` + `satset`) and instantly expands upon mouse hover or spring-loaded drag, giving you frictionless access to three core productivity tools without touching your dock or taxing your system resources.
+**mini-satset** is an ultra-fast, unobtrusive menu bar companion for macOS designed to replace bloated Electron utilities. It resides permanently in your status bar (`bolt.fill` + `satset`) and instantly expands upon mouse hover or spring-loaded drag, giving you frictionless access to five core productivity tools without touching your dock or taxing your system resources.
 
 ---
 
@@ -117,7 +117,28 @@ make app
 # 3. (Optional) Create DMG Installer
 make dmg
 ```
-The built application bundle will be located at `mini-satset.app`, and the installer package at `dist/mini-satset-1.0.0.dmg`.
+The built application bundle will be located at `mini-satset.app`, and the installer package at `dist/mini-satset-1.1.0.dmg`.
+
+---
+
+## Uninstalling
+
+### Method 1: 1-Click Native Uninstaller (Recommended)
+Right-click the `satset` icon in the menu bar and select **Uninstall mini-satset...**. The app will:
+1. Unregister from Launch at Login (`SMAppService`).
+2. Delete preference plist, caches, and saved application state.
+3. Move `mini-satset.app` to your Trash.
+4. Terminate cleanly leaving zero residual files.
+
+### Method 2: Manual Terminal Cleanup
+If the application was deleted manually, clean up all residual files with:
+```bash
+killall mini-satset 2>/dev/null || true
+rm -rf /Applications/mini-satset.app
+rm -rf ~/Library/Preferences/com.rafacnkz.mini-satset.plist
+rm -rf ~/Library/Caches/com.rafacnkz.mini-satset
+rm -rf "$HOME/Library/Saved Application State/com.rafacnkz.mini-satset.savedState"
+```
 
 ---
 
@@ -127,6 +148,7 @@ The built application bundle will be located at `mini-satset.app`, and the insta
 make build    # Compile optimized release binary with -O -whole-module-optimization
 make run      # Compile and launch directly in the terminal
 make icon     # Generate 1024x1024 base PNG and compile multi-res AppIcon.icns
+make mockup   # Render 3400x1350 Retina showcase banner of all 5 pages
 make app      # Assemble signed .app bundle with Info.plist and icons
 make dmg      # Build Universal 2 binary and package into DMG installer
 make clean    # Remove build artifacts, bundles, and temporary distribution files
