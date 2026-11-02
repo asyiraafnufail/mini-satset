@@ -132,6 +132,10 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         return state == .open || state == .opening
     }
 
+    var isSamplingColor: Bool {
+        return colorSamplerVC.isSamplingColor
+    }
+
     var currentFrame: NSRect {
         return panel.frame
     }

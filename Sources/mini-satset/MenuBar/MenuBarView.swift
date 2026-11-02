@@ -1,4 +1,23 @@
 import AppKit
+import ServiceManagement
+
+enum LaunchAtLogin {
+    static var isEnabled: Bool {
+        return SMAppService.mainApp.status == .enabled
+    }
+
+    static func toggle() {
+        do {
+            if SMAppService.mainApp.status == .enabled {
+                try SMAppService.mainApp.unregister()
+            } else {
+                try SMAppService.mainApp.register()
+            }
+        } catch {
+            print("LaunchAtLogin status change error: \(error.localizedDescription)")
+        }
+    }
+}
 
 protocol MenuBarViewDelegate: AnyObject {
     func menuBarViewDidTriggerExpand(_ view: MenuBarView)
@@ -121,6 +140,16 @@ final class MenuBarView: NSView {
         menu.addItem(titleItem)
         menu.addItem(NSMenuItem.separator())
 
+        let launchItem = NSMenuItem(
+            title: "Launch at Login",
+            action: #selector(handleToggleLaunchAtLogin(_:)),
+            keyEquivalent: ""
+        )
+        launchItem.target = self
+        launchItem.state = LaunchAtLogin.isEnabled ? .on : .off
+        menu.addItem(launchItem)
+        menu.addItem(NSMenuItem.separator())
+
         let quitItem = NSMenuItem(
             title: "Quit mini-satset",
             action: #selector(handleQuit),
@@ -130,6 +159,11 @@ final class MenuBarView: NSView {
         menu.addItem(quitItem)
 
         NSMenu.popUpContextMenu(menu, with: event, for: self)
+    }
+
+    @objc private func handleToggleLaunchAtLogin(_ sender: NSMenuItem) {
+        LaunchAtLogin.toggle()
+        sender.state = LaunchAtLogin.isEnabled ? .on : .off
     }
 
     @objc private func handleQuit() {

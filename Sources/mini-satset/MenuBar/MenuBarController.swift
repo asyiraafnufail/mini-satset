@@ -120,8 +120,7 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     }
 
     private func checkMouseZone() {
-        guard panelController.isVisible else {
-            stopHoverCheck()
+        guard panelController.isVisible, !panelController.isSamplingColor else {
             return
         }
 

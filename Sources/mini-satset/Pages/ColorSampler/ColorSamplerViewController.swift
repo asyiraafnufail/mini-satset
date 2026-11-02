@@ -1,6 +1,7 @@
 import AppKit
 
 final class ColorSamplerViewController: NSViewController {
+    var isSamplingColor: Bool = false
     private var recentColors: [(color: NSColor, hex: String)] = []
 
     private let previewSwatch = NSView()
@@ -109,10 +110,14 @@ final class ColorSamplerViewController: NSViewController {
     }
 
     @objc private func handlePickColor() {
+        isSamplingColor = true
         let sampler = NSColorSampler()
         sampler.show { [weak self] selectedColor in
-            guard let self = self, let color = selectedColor else { return }
-            self.applyColor(color)
+            guard let self = self else { return }
+            self.isSamplingColor = false
+            if let color = selectedColor {
+                self.applyColor(color)
+            }
         }
     }
 

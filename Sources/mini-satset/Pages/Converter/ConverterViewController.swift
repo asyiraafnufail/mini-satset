@@ -94,8 +94,21 @@ final class ConverterViewController: NSViewController {
         updateState()
     }
 
+    deinit {
+        if let out = outputFileURL {
+            try? FileManager.default.removeItem(at: out)
+        }
+    }
+
     func setInputFile(_ url: URL) {
         guard outputFileURL == nil else { return }
+
+        let cat = engine.category(for: url)
+        guard cat != .unsupported else {
+            showErrorAlert("Unsupported format. Please choose an image (PNG, JPG, HEIC, WEBP, TIFF) or audio file (WAV, MP3, M4A, CAF).")
+            return
+        }
+
         self.inputFileURL = url
         inputDropZone.displayFile(url)
 
