@@ -1,0 +1,189 @@
+import AppKit
+
+final class ColorSamplerViewController: NSViewController {
+    private var recentColors: [NSColor] = []
+
+    private let previewSwatch = NSView()
+    private let hexLabel = NSTextField(labelWithString: "#------")
+    private let rgbLabel = NSTextField(labelWithString: "rgb(-, -, -)")
+    private let hslLabel = NSTextField(labelWithString: "hsl(-, -%, -%)")
+    private let toastLabel = NSTextField(labelWithString: "Klik tombol untuk ambil warna layar")
+    private let recentStack = NSStackView()
+
+    override func loadView() {
+        view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 290))
+        setupUI()
+    }
+
+    private func setupUI() {
+        // Sample Button
+        let pickBtn = NSButton(frame: NSRect(x: 16, y: 246, width: 288, height: 32))
+        pickBtn.title = " Ambil Warna Layar (Loupe)"
+        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        pickBtn.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: nil)?
+            .withSymbolConfiguration(config)
+        pickBtn.bezelStyle = .rounded
+        pickBtn.target = self
+        pickBtn.action = #selector(handlePickColor)
+        view.addSubview(pickBtn)
+
+        // Preview Card
+        let card = NSView(frame: NSRect(x: 16, y: 76, width: 288, height: 160))
+        card.wantsLayer = true
+        card.layer?.cornerRadius = 10
+        card.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+        view.addSubview(card)
+
+        previewSwatch.frame = NSRect(x: 14, y: 55, width: 64, height: 64)
+        previewSwatch.wantsLayer = true
+        previewSwatch.layer?.cornerRadius = 8
+        previewSwatch.layer?.borderWidth = 1
+        previewSwatch.layer?.borderColor = NSColor.separatorColor.cgColor
+        previewSwatch.layer?.backgroundColor = NSColor.darkGray.cgColor
+        card.addSubview(previewSwatch)
+
+        // Labels Container
+        hexLabel.font = NSFont.monospacedSystemFont(ofSize: 16, weight: .bold)
+        hexLabel.textColor = .labelColor
+        hexLabel.frame = NSRect(x: 90, y: 95, width: 184, height: 22)
+        card.addSubview(hexLabel)
+
+        rgbLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        rgbLabel.textColor = .secondaryLabelColor
+        rgbLabel.frame = NSRect(x: 90, y: 75, width: 184, height: 16)
+        card.addSubview(rgbLabel)
+
+        hslLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        hslLabel.textColor = .secondaryLabelColor
+        hslLabel.frame = NSRect(x: 90, y: 55, width: 184, height: 16)
+        card.addSubview(hslLabel)
+
+        // Clickable copy buttons
+        let copyHexBtn = makeMiniCopyButton(title: "Salin HEX", action: #selector(handleCopyHex))
+        copyHexBtn.frame = NSRect(x: 14, y: 14, width: 80, height: 24)
+        card.addSubview(copyHexBtn)
+
+        let copyRgbBtn = makeMiniCopyButton(title: "Salin RGB", action: #selector(handleCopyRgb))
+        copyRgbBtn.frame = NSRect(x: 102, y: 14, width: 80, height: 24)
+        card.addSubview(copyRgbBtn)
+
+        let copyHslBtn = makeMiniCopyButton(title: "Salin HSL", action: #selector(handleCopyHsl))
+        copyHslBtn.frame = NSRect(x: 190, y: 14, width: 80, height: 24)
+        card.addSubview(copyHslBtn)
+
+        // Recent Colors Section
+        let recentTitle = NSTextField(labelWithString: "Riwayat Terakhir:")
+        recentTitle.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        recentTitle.textColor = .tertiaryLabelColor
+        recentTitle.frame = NSRect(x: 16, y: 46, width: 100, height: 14)
+        view.addSubview(recentTitle)
+
+        recentStack.orientation = .horizontal
+        recentStack.spacing = 6
+        recentStack.frame = NSRect(x: 116, y: 42, width: 188, height: 20)
+        view.addSubview(recentStack)
+
+        // Toast feedback
+        toastLabel.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        toastLabel.textColor = .secondaryLabelColor
+        toastLabel.alignment = .center
+        toastLabel.frame = NSRect(x: 16, y: 12, width: 288, height: 16)
+        view.addSubview(toastLabel)
+    }
+
+    private func makeMiniCopyButton(title: String, action: Selector) -> NSButton {
+        let btn = NSButton()
+        btn.title = title
+        btn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        btn.bezelStyle = .inline
+        btn.target = self
+        btn.action = action
+        return btn
+    }
+
+    @objc private func handlePickColor() {
+        let sampler = NSColorSampler()
+        sampler.show { [weak self] selectedColor in
+            guard let self = self, let color = selectedColor else { return }
+            self.applyColor(color)
+        }
+    }
+
+    private func applyColor(_ color: NSColor) {
+        let formats = ColorFormatHelper.formats(from: color)
+
+        previewSwatch.layer?.backgroundColor = color.cgColor
+        hexLabel.stringValue = formats.hex
+        rgbLabel.stringValue = formats.rgb
+        hslLabel.stringValue = formats.hsl
+
+        // Auto copy HEX to pasteboard
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(formats.hex, forType: .string)
+        showToast("Auto-copy: \(formats.hex) ke clipboard!")
+
+        // Update recents
+        if !recentColors.contains(where: { ColorFormatHelper.formats(from: $0).hex == formats.hex }) {
+            recentColors.insert(color, at: 0)
+            if recentColors.count > 5 {
+                recentColors.removeLast()
+            }
+            refreshRecentSwatches()
+        }
+    }
+
+    private func refreshRecentSwatches() {
+        recentStack.subviews.forEach { $0.removeFromSuperview() }
+        for color in recentColors {
+            let swatch = NSButton()
+            swatch.title = ""
+            swatch.isBordered = false
+            swatch.wantsLayer = true
+            swatch.layer?.cornerRadius = 4
+            swatch.layer?.backgroundColor = color.cgColor
+            swatch.layer?.borderWidth = 1
+            swatch.layer?.borderColor = NSColor.separatorColor.cgColor
+            swatch.target = self
+            swatch.action = #selector(handleRecentClick(_:))
+            swatch.identifier = NSUserInterfaceItemIdentifier(ColorFormatHelper.formats(from: color).hex)
+
+            swatch.widthAnchor.constraint(equalToConstant: 18).isActive = true
+            swatch.heightAnchor.constraint(equalToConstant: 18).isActive = true
+            recentStack.addArrangedSubview(swatch)
+        }
+    }
+
+    @objc private func handleRecentClick(_ sender: NSButton) {
+        guard let hex = sender.identifier?.rawValue,
+              let matched = recentColors.first(where: { ColorFormatHelper.formats(from: $0).hex == hex }) else { return }
+        applyColor(matched)
+    }
+
+    @objc private func handleCopyHex() {
+        guard hexLabel.stringValue != "#------" else { return }
+        copyText(hexLabel.stringValue, message: "HEX disalin!")
+    }
+
+    @objc private func handleCopyRgb() {
+        guard rgbLabel.stringValue != "rgb(-, -, -)" else { return }
+        copyText(rgbLabel.stringValue, message: "RGB disalin!")
+    }
+
+    @objc private func handleCopyHsl() {
+        guard hslLabel.stringValue != "hsl(-, -%, -%)" else { return }
+        copyText(hslLabel.stringValue, message: "HSL disalin!")
+    }
+
+    private func copyText(_ text: String, message: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        showToast(message)
+    }
+
+    private func showToast(_ message: String) {
+        toastLabel.stringValue = message
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            self?.toastLabel.stringValue = "Klik tombol untuk ambil warna layar"
+        }
+    }
+}
