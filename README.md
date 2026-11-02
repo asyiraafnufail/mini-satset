@@ -17,6 +17,10 @@
   <img src="https://img.shields.io/badge/CPU%20impact-0.0%25%20idle-44cc11" alt="CPU Impact" />
 </p>
 
+<p align="center">
+  <img src="docs/images/mockup_preview.png" width="100%" alt="mini-satset 3-page preview showcase" style="border-radius: 16px;" />
+</p>
+
 ---
 
 ## Overview

@@ -2,7 +2,7 @@ SWIFT_FILES := $(shell find Sources -name "*.swift")
 APP_NAME := mini-satset
 APP_BUNDLE := $(APP_NAME).app
 
-.PHONY: all build run app dmg icon clean
+.PHONY: all build run app dmg icon mockup clean
 
 all: build
 
@@ -10,6 +10,11 @@ icon:
 	@swift Resources/scripts/generate_icon.swift Resources/icon_1024.png
 	@chmod +x Resources/scripts/make-icns.sh
 	@./Resources/scripts/make-icns.sh
+
+mockup:
+	@mkdir -p docs/images
+	@swift Resources/scripts/generate_mockup.swift docs/images/mockup_preview.png
+	@echo "Mockup siap: docs/images/mockup_preview.png"
 
 build:
 	@mkdir -p bin
