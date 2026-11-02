@@ -11,7 +11,7 @@ final class PageIndicatorView: NSView {
     private let selectionIndicator = CALayer()
     private(set) var selectedIndex: Int = 0
 
-    private let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull"]
+    private let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull", "qrcode"]
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)

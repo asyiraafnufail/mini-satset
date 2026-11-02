@@ -112,8 +112,9 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     private let shelfVC = ShelfViewController()
     private let converterVC = ConverterViewController()
     private let colorSamplerVC = ColorSamplerViewController()
+    private let qrCodeVC = QRCodeViewController()
 
-    private lazy var pages: [NSViewController] = [shelfVC, converterVC, colorSamplerVC]
+    private lazy var pages: [NSViewController] = [shelfVC, converterVC, colorSamplerVC, qrCodeVC]
     private(set) var activePageIndex: Int = 0
 
     // MARK: - Animation State Machine & Dedicated Timer Animator
@@ -167,6 +168,8 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             guard let self = self else { return }
             if self.activePageIndex == 1, let first = urls.first {
                 self.addFileToConverter(first)
+            } else if self.activePageIndex == 3, let first = urls.first {
+                self.readQRCode(first)
             } else {
                 self.addFilesToShelf(urls)
             }
@@ -224,6 +227,11 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
     func addFileToConverter(_ url: URL) {
         converterVC.setInputFile(url)
+    }
+
+    func readQRCode(_ url: URL) {
+        displayPage(at: 3, animated: false)
+        qrCodeVC.readQR(from: url)
     }
 
     func addFilesToShelf(_ urls: [URL]) {

@@ -56,6 +56,8 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     func menuBarView(_ view: MenuBarView, didDropFiles urls: [URL]) {
         if panelController.activePageIndex == 1, let first = urls.first {
             panelController.addFileToConverter(first)
+        } else if panelController.activePageIndex == 3, let first = urls.first {
+            panelController.readQRCode(first)
         } else {
             panelController.addFilesToShelf(urls)
         }
