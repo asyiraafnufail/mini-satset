@@ -49,12 +49,15 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     }
 
     func menuBarViewDidTriggerDragExpand(_ view: MenuBarView) {
-        panelController.switchToShelfPage()
         openPanel()
     }
 
     func menuBarView(_ view: MenuBarView, didDropFiles urls: [URL]) {
-        panelController.addFilesToShelf(urls)
+        if panelController.activePageIndex == 1, let first = urls.first {
+            panelController.addFileToConverter(first)
+        } else {
+            panelController.addFilesToShelf(urls)
+        }
         openPanel()
     }
 

@@ -110,10 +110,10 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     private let containerView = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 292))
 
     private let shelfVC = ShelfViewController()
-    private let networkVC = NetworkViewController()
+    private let converterVC = ConverterViewController()
     private let colorSamplerVC = ColorSamplerViewController()
 
-    private lazy var pages: [NSViewController] = [shelfVC, networkVC, colorSamplerVC]
+    private lazy var pages: [NSViewController] = [shelfVC, converterVC, colorSamplerVC]
     private(set) var activePageIndex: Int = 0
 
     // MARK: - Animation State Machine & Dedicated Timer Animator
@@ -160,7 +160,12 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
             self.delegate?.panelControllerMouseExit(self)
         }
         visualEffectView.onFilesDropped = { [weak self] urls in
-            self?.addFilesToShelf(urls)
+            guard let self = self else { return }
+            if self.activePageIndex == 1, let first = urls.first {
+                self.addFileToConverter(first)
+            } else {
+                self.addFilesToShelf(urls)
+            }
         }
 
         let separator = NSBox(frame: NSRect(x: 0, y: 293, width: 320, height: 1))
@@ -211,6 +216,10 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     func switchToShelfPage() {
         guard activePageIndex != 0 else { return }
         displayPage(at: 0, animated: false)
+    }
+
+    func addFileToConverter(_ url: URL) {
+        converterVC.setInputFile(url)
     }
 
     func addFilesToShelf(_ urls: [URL]) {

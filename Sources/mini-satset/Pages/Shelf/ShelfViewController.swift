@@ -74,8 +74,8 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func setupUI() {
-        // Files Section (Top: 296 x 90)
-        fileDropView.frame = NSRect(x: 12, y: 190, width: 296, height: 90)
+        // Files Section (Top: 296 x 84, 12pt from top edge)
+        fileDropView.frame = NSRect(x: 12, y: 194, width: 296, height: 84)
         fileDropView.onFilesDropped = { [weak self] urls in
             for url in urls {
                 self?.store.addFileURL(url)
@@ -88,8 +88,8 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
         }
         view.addSubview(fileDropView)
 
-        // Text Input Field (Middle: 220 x 26)
-        inputField.frame = NSRect(x: 12, y: 154, width: 220, height: 26)
+        // Text Input Field Row (Middle: y=160, h=26, 8pt gap from top section)
+        inputField.frame = NSRect(x: 12, y: 160, width: 220, height: 26)
         inputField.placeholderString = "Type or paste text..."
         inputField.font = NSFont.systemFont(ofSize: 12)
         inputField.isBezeled = true
@@ -99,7 +99,7 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
         view.addSubview(inputField)
 
         // Symmetrical Quick Paste Button (32 x 26)
-        pasteBtn.frame = NSRect(x: 238, y: 154, width: 32, height: 26)
+        pasteBtn.frame = NSRect(x: 238, y: 160, width: 32, height: 26)
         pasteBtn.title = ""
         pasteBtn.toolTip = "Paste directly from clipboard"
         pasteBtn.isBordered = false
@@ -115,7 +115,7 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
         view.addSubview(pasteBtn)
 
         // Symmetrical Add (+) Button (32 x 26)
-        addBtn.frame = NSRect(x: 276, y: 154, width: 32, height: 26)
+        addBtn.frame = NSRect(x: 276, y: 160, width: 32, height: 26)
         addBtn.title = ""
         addBtn.toolTip = "Add snippet to shelf"
         addBtn.isBordered = false
@@ -130,13 +130,13 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
         addBtn.action = #selector(handleAddText)
         view.addSubview(addBtn)
 
-        // Text Snippets Container (Max 4 Cards, Symmetrical: 296 x 118)
-        textContainerView.frame = NSRect(x: 12, y: 30, width: 296, height: 118)
+        // Text Snippets Container (Max 4 Cards, Symmetrical: 296 x 116, 8pt gap)
+        textContainerView.frame = NSRect(x: 12, y: 36, width: 296, height: 116)
         textContainerView.wantsLayer = true
         view.addSubview(textContainerView)
 
-        // Bottom Static Notice
-        toastLabel.frame = NSRect(x: 12, y: 8, width: 296, height: 16)
+        // Bottom Static Notice (12pt from bottom edge)
+        toastLabel.frame = NSRect(x: 12, y: 12, width: 296, height: 16)
         toastLabel.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         toastLabel.textColor = .secondaryLabelColor
         toastLabel.alignment = .center
@@ -464,17 +464,11 @@ final class FileDropZoneView: NSView, NSDraggingSource {
         titleLabel.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         titleLabel.textColor = .secondaryLabelColor
         titleLabel.alignment = .center
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
 
         cardsContainer.frame = NSRect(x: 6, y: 6, width: 284, height: 78)
         cardsContainer.wantsLayer = true
         addSubview(cardsContainer)
-
-        NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
-        ])
     }
 
     override func layout() {
@@ -482,6 +476,7 @@ final class FileDropZoneView: NSView, NSDraggingSource {
         let path = CGPath(roundedRect: bounds.insetBy(dx: 1, dy: 1), cornerWidth: 8, cornerHeight: 8, transform: nil)
         dashedBorder.path = path
         dashedBorder.frame = bounds
+        titleLabel.frame = NSRect(x: 10, y: (bounds.height - 18) / 2, width: bounds.width - 20, height: 18)
         cardsContainer.frame = bounds.insetBy(dx: 6, dy: 6)
     }
 

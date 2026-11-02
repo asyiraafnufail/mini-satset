@@ -16,25 +16,30 @@ final class ColorSamplerViewController: NSViewController {
     }
 
     private func setupUI() {
-        // Sample Button
-        let pickBtn = NSButton(frame: NSRect(x: 16, y: 246, width: 288, height: 32))
+        // Sample Button (Top: 296 x 28, 12pt from top edge)
+        let pickBtn = NSButton(frame: NSRect(x: 12, y: 250, width: 296, height: 28))
         pickBtn.title = " Pick Screen Color (Loupe)"
-        let config = NSImage.SymbolConfiguration(pointSize: 12, weight: .medium)
+        let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
         pickBtn.image = NSImage(systemSymbolName: "eyedropper", accessibilityDescription: nil)?
             .withSymbolConfiguration(config)
-        pickBtn.bezelStyle = .rounded
+        pickBtn.wantsLayer = true
+        pickBtn.isBordered = false
+        pickBtn.layer?.cornerRadius = 8
+        pickBtn.layer?.backgroundColor = NSColor.controlAccentColor.cgColor
+        pickBtn.contentTintColor = .white
+        pickBtn.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         pickBtn.target = self
         pickBtn.action = #selector(handlePickColor)
         view.addSubview(pickBtn)
 
-        // Preview Card
-        let card = NSView(frame: NSRect(x: 16, y: 76, width: 288, height: 160))
+        // Preview Card (Middle: 296 x 150, 8pt gap, radius 8)
+        let card = NSView(frame: NSRect(x: 12, y: 92, width: 296, height: 150))
         card.wantsLayer = true
-        card.layer?.cornerRadius = 10
+        card.layer?.cornerRadius = 8
         card.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
         view.addSubview(card)
 
-        previewSwatch.frame = NSRect(x: 14, y: 55, width: 64, height: 64)
+        previewSwatch.frame = NSRect(x: 14, y: 70, width: 64, height: 64)
         previewSwatch.wantsLayer = true
         previewSwatch.layer?.cornerRadius = 8
         previewSwatch.layer?.borderWidth = 1
@@ -45,57 +50,61 @@ final class ColorSamplerViewController: NSViewController {
         // Labels Container
         hexLabel.font = NSFont.monospacedSystemFont(ofSize: 16, weight: .bold)
         hexLabel.textColor = .labelColor
-        hexLabel.frame = NSRect(x: 90, y: 95, width: 184, height: 22)
+        hexLabel.frame = NSRect(x: 90, y: 110, width: 192, height: 22)
         card.addSubview(hexLabel)
 
         rgbLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         rgbLabel.textColor = .secondaryLabelColor
-        rgbLabel.frame = NSRect(x: 90, y: 75, width: 184, height: 16)
+        rgbLabel.frame = NSRect(x: 90, y: 90, width: 192, height: 16)
         card.addSubview(rgbLabel)
 
         hslLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         hslLabel.textColor = .secondaryLabelColor
-        hslLabel.frame = NSRect(x: 90, y: 55, width: 184, height: 16)
+        hslLabel.frame = NSRect(x: 90, y: 70, width: 192, height: 16)
         card.addSubview(hslLabel)
 
-        // Clickable copy buttons
+        // Symmetrical Clickable Copy Buttons (84 x 26 each, 8pt gap)
         let copyHexBtn = makeMiniCopyButton(title: "Copy HEX", action: #selector(handleCopyHex))
-        copyHexBtn.frame = NSRect(x: 14, y: 14, width: 80, height: 24)
+        copyHexBtn.frame = NSRect(x: 14, y: 14, width: 84, height: 26)
         card.addSubview(copyHexBtn)
 
         let copyRgbBtn = makeMiniCopyButton(title: "Copy RGB", action: #selector(handleCopyRgb))
-        copyRgbBtn.frame = NSRect(x: 102, y: 14, width: 80, height: 24)
+        copyRgbBtn.frame = NSRect(x: 106, y: 14, width: 84, height: 26)
         card.addSubview(copyRgbBtn)
 
         let copyHslBtn = makeMiniCopyButton(title: "Copy HSL", action: #selector(handleCopyHsl))
-        copyHslBtn.frame = NSRect(x: 190, y: 14, width: 80, height: 24)
+        copyHslBtn.frame = NSRect(x: 198, y: 14, width: 84, height: 26)
         card.addSubview(copyHslBtn)
 
-        // Recent Colors Section
+        // Recent Colors Section (y=60, h=24)
         let recentTitle = NSTextField(labelWithString: "Recent:")
-        recentTitle.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        recentTitle.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         recentTitle.textColor = .tertiaryLabelColor
-        recentTitle.frame = NSRect(x: 16, y: 46, width: 100, height: 14)
+        recentTitle.frame = NSRect(x: 12, y: 64, width: 48, height: 16)
         view.addSubview(recentTitle)
 
         recentStack.orientation = .horizontal
         recentStack.spacing = 6
-        recentStack.frame = NSRect(x: 116, y: 42, width: 188, height: 20)
+        recentStack.frame = NSRect(x: 64, y: 62, width: 244, height: 20)
         view.addSubview(recentStack)
 
-        // Toast feedback
+        // Toast feedback (12pt from bottom edge)
         toastLabel.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         toastLabel.textColor = .secondaryLabelColor
         toastLabel.alignment = .center
-        toastLabel.frame = NSRect(x: 16, y: 12, width: 288, height: 16)
+        toastLabel.frame = NSRect(x: 12, y: 12, width: 296, height: 18)
         view.addSubview(toastLabel)
     }
 
     private func makeMiniCopyButton(title: String, action: Selector) -> NSButton {
         let btn = NSButton()
         btn.title = title
-        btn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
-        btn.bezelStyle = .inline
+        btn.font = NSFont.systemFont(ofSize: 10.5, weight: .medium)
+        btn.wantsLayer = true
+        btn.isBordered = false
+        btn.layer?.cornerRadius = 6
+        btn.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+        btn.contentTintColor = .labelColor
         btn.target = self
         btn.action = action
         return btn
