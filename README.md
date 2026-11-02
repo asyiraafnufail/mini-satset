@@ -9,6 +9,14 @@
   Zero external dependencies • 0.0% idle CPU • Resident RAM &lt; 12 MB • Pure Swift & AppKit
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-macOS%2013%2B%20(Ventura--Sequoia)-black?logo=apple&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/arch-Universal%202%20(Apple%20Silicon%20%7C%20Intel)-007ACC" alt="Architecture" />
+  <img src="https://img.shields.io/badge/language-Swift-FA7343?logo=swift&logoColor=white" alt="Language" />
+  <img src="https://img.shields.io/badge/memory-%3C%2012%20MB%20RAM-44cc11" alt="Memory" />
+  <img src="https://img.shields.io/badge/CPU%20impact-0.0%25%20idle-44cc11" alt="CPU Impact" />
+</p>
+
 ---
 
 ## Overview
