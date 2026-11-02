@@ -11,18 +11,20 @@ echo "=== Compiling with swiftc ==="
 mkdir -p bin dist "${APP_BUNDLE}/Contents/MacOS" "${APP_BUNDLE}/Contents/Resources"
 
 # Try Universal Binary (arm64 + x86_64)
-if swiftc -target arm64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-arm64 2>/dev/null && \
-   swiftc -target x86_64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-x86 2>/dev/null; then
+if swiftc -O -whole-module-optimization -target arm64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-arm64 2>/dev/null && \
+   swiftc -O -whole-module-optimization -target x86_64-apple-macos13.0 ${SWIFT_FILES} -o bin/${APP_NAME}-x86 2>/dev/null; then
     echo "Creating Universal 2 binary with lipo..."
     lipo -create -output "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}" bin/${APP_NAME}-arm64 bin/${APP_NAME}-x86
 else
-    echo "Compiling native host architecture..."
-    swiftc ${SWIFT_FILES} -o "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+    echo "Compiling native host architecture with -O..."
+    swiftc -O -whole-module-optimization ${SWIFT_FILES} -o "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
 fi
 
 cp "Resources/Info.plist" "${APP_BUNDLE}/Contents/Info.plist"
+cp "Resources/AppIcon.icns" "${APP_BUNDLE}/Contents/Resources/AppIcon.icns" 2>/dev/null || true
 echo "APPL????" > "${APP_BUNDLE}/Contents/PkgInfo"
 chmod +x "${APP_BUNDLE}/Contents/MacOS/${APP_NAME}"
+codesign --force --deep --sign - "${APP_BUNDLE}" 2>/dev/null || true
 
 echo "=== Creating DMG Package ==="
 rm -f "${DMG_PATH}"

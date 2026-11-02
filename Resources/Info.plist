@@ -4,6 +4,8 @@
 <dict>
     <key>CFBundleExecutable</key>
     <string>mini-satset</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
     <string>com.rafacnkz.mini-satset</string>
     <key>CFBundleName</key>
