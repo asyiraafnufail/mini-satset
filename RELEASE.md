@@ -1,36 +1,41 @@
-# mini-satset v1.0.0 (Initial Release)
+# mini-satset v1.1.0 (5-Page Production Suite + Pin Mode)
 
 > Ultra-lightweight native macOS menu bar utility built for speed, portability, and zero-overhead workflow.
+> Zero external dependencies • 0.0% idle CPU • Resident RAM < 12 MB • Pure Swift & AppKit
 
 ---
 
-### What's New in v1.0.0
+### What's New in v1.1.0
 
-#### 1. Temporary Shelf (Files & Clipboard)
-- Staging zone for up to 4 temporary files with automatic symmetrical grid layout.
-- Full two-way drag-and-drop integration directly with macOS Finder and external apps.
-- Store up to 4 quick text snippets with instant copy (`Cmd+C`), paste (`Cmd+V`), and add.
-- Lazy 5-minute auto-destruct (zero running countdown timers, 0.0% idle CPU).
+#### 1. Pin Mode (Always on Top)
+- Dedicated header toggle button (`pin` / `pin.fill`) to lock the panel open while multitasking, dragging files across workspaces, or taking notes.
+- Completely shuts down hover polling timers while pinned (**0.0% CPU impact**).
+- Restores smooth auto-dismiss behavior instantly upon unpinning.
 
-#### 2. Native Quick File Converter
-- Convert images (**PNG, JPG, HEIC, WEBP, TIFF**) via hardware-accelerated `ImageIO`.
-- Strict 1:1 original pixel dimension protection (upscaling prohibited).
-- Compression & quality presets (*High, Medium, Compressed*).
-- Convert audio (**WAV, MP3, M4A, CAF**) via native CoreAudio (`/usr/bin/afconvert`).
-- Single-slot temporary output shelf draggable directly to Finder, locked until cleared.
+#### 2. Page 4: QR Code Lab (Two-Way Generator & Scanner)
+- **Live Vector QR Generation**: High-contrast, sharp QR code synthesis in real-time as you type or paste URL/text (`CIQRCodeGenerator`), padded with clean quiet zone margins.
+- **Direct Drag & Copy**: Copy QR image or raw text directly to clipboard, or drag the QR image directly from the card into Finder or other apps.
+- **Image Drop Scanner**: Drop any image containing a QR code to decode instantly via CoreImage `CIDetector` and copy extracted text to clipboard.
 
-#### 3. Screen Color Sampler
-- Native precision screen loupe via `NSColorSampler`.
-- Auto-copies standard **HEX** to clipboard on pick.
-- Displays simultaneous **HEX**, **RGB**, and **HSL** values with one-click copy buttons.
-- Recent 5 swatches history with auto-dismiss guard during active sampling.
+#### 3. Page 5: Screen OCR & Text Grabber (100% On-Device Neural Engine)
+- **Interactive Screen Area Snipping**: Snip any rectangular area of your screen using native `/usr/sbin/screencapture`.
+- **Apple Vision Framework**: Real-time on-device text recognition with language correction (`VNRecognizeTextRequest`), running entirely offline via the Apple Neural Engine.
+- **Screenshot Drag & Drop**: Drop any image or screenshot file into the drop zone to extract selectable, scrollable text instantly.
+- **100% Offline & Private**: Zero network calls, zero cloud telemetry, instant clipboard copy.
 
-#### 4. Menu Bar & System Integration
-- Permanent 68pt standby status item (`bolt.fill` + `satset`).
-- Instant hover expansion and active zone boundary tracking.
-- Spring-loaded drag expansion preserving current active page tab.
-- Native `SMAppService` **Launch at Login** toggle in right-click context menu.
-- Pure frame-based manual layout (zero Autolayout constraint solver overhead).
+#### 4. Engine & Memory Optimizations
+- **Scoped Autoreleasepool Execution**: Wrapped heavy ImageIO, CoreGraphics, CoreImage, and Apple Vision operations in localized `autoreleasepool` blocks to release memory immediately upon task completion.
+- **Zero Idle CPU**: Complete elimination of continuous timers; all toast resets and hover monitors are invalidatable and stop when idle or pinned.
+- **Lazy Drag Export**: QR image PNGs are only written to disk if an actual drag gesture to Finder is initiated.
+
+---
+
+### Core Suite (All 5 Pages)
+1. **Shelf**: File staging zone (up to 4 files) + text snippets with lazy 5-minute auto-destruct.
+2. **Converter**: Hardware-accelerated image & CoreAudio transcoding with 1:1 pixel protection.
+3. **Color Sampler**: Precision screen loupe with HEX, RGB, HSL conversion and recent swatches.
+4. **QR Code Lab**: Two-way QR generator and image drop scanner with drag-to-export.
+5. **Screen OCR**: Interactive rectangle screen capture + on-device Apple Neural Engine text recognition.
 
 ---
 
@@ -44,7 +49,7 @@
 
 ### Installation
 
-1. Download **`mini-satset-1.0.0.dmg`** below.
+1. Download **`mini-satset-1.1.0.dmg`** below.
 2. Open the DMG and drag **mini-satset** into your **Applications** folder.
 3. **First Launch Note**: Right-click (or Control-click) `mini-satset` in Applications → choose **Open** → click **Open** to approve self-signed ad-hoc binary on macOS Ventura, Sonoma, or Sequoia.
 
@@ -52,5 +57,5 @@
 
 ### Verification (SHA-256)
 ```text
-dist/mini-satset-1.0.0.dmg
+dist/mini-satset-1.1.0.dmg
 ```

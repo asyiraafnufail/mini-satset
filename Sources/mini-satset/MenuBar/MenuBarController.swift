@@ -8,11 +8,24 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     private var hoverCheckTimer: Timer?
     private var cachedActiveZone: NSRect = .zero
 
+    deinit {
+        stopHoverCheck()
+    }
+
     override init() {
         super.init()
         setupStatusItem()
         menuBarView.delegate = self
         panelController.delegate = self
+        panelController.onPinStateChanged = { [weak self] isPinned in
+            guard let self = self, self.panelController.isVisible else { return }
+            if isPinned {
+                self.stopHoverCheck()
+            } else {
+                self.updateActiveZone()
+                self.startHoverCheck()
+            }
+        }
     }
 
     private func setupStatusItem() {
@@ -58,6 +71,8 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
             panelController.addFileToConverter(first)
         } else if panelController.activePageIndex == 3, let first = urls.first {
             panelController.readQRCode(first)
+        } else if panelController.activePageIndex == 4, let first = urls.first {
+            panelController.processOCRImage(first)
         } else {
             panelController.addFilesToShelf(urls)
         }
@@ -73,6 +88,29 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
         dismissAll()
     }
 
+    func panelControllerDidRequestSnip(_ controller: PanelController) {
+        panelController.ocrVC.isSnipping = true
+        stopHoverCheck()
+        panelController.hideInstantly()
+        menuBarView.setHighlight(false, animated: false)
+
+        OCREngine.shared.captureScreenAndRecognize { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.panelController.ocrVC.isSnipping = false
+                self.openPanel()
+                self.panelController.displayPage(at: 4, animated: false)
+
+                switch result {
+                case .success(let text):
+                    self.panelController.handleOCRResult(text)
+                case .failure:
+                    self.panelController.handleOCRResult(nil)
+                }
+            }
+        }
+    }
+
     // MARK: - Open / Dismiss Coordination
 
     private func openPanel() {
@@ -80,7 +118,9 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
         menuBarView.setHighlight(true, animated: true)
         panelController.show(relativeTo: menuBarView)
         updateActiveZone()
-        startHoverCheck()
+        if !panelController.isPinned {
+            startHoverCheck()
+        }
     }
 
     private func dismissAll() {
@@ -122,7 +162,11 @@ final class MenuBarController: NSObject, MenuBarViewDelegate, PanelControllerDel
     }
 
     private func checkMouseZone() {
-        guard panelController.isVisible, !panelController.isSamplingColor else {
+        guard panelController.isVisible,
+              !panelController.isSamplingColor,
+              !panelController.isSnippingText,
+              !panelController.isPinned,
+              !panelController.hasActiveSheet else {
             return
         }
 

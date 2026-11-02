@@ -11,7 +11,7 @@ final class PageIndicatorView: NSView {
     private let selectionIndicator = CALayer()
     private(set) var selectedIndex: Int = 0
 
-    private let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull", "qrcode"]
+    private let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull", "qrcode", "text.viewfinder"]
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -52,9 +52,9 @@ final class PageIndicatorView: NSView {
 
     override func layout() {
         super.layout()
-        let buttonWidth: CGFloat = 36
+        let buttonWidth: CGFloat = 34
         let buttonHeight: CGFloat = 28
-        let spacing: CGFloat = 8
+        let spacing: CGFloat = 6
         let totalWidth = CGFloat(tabButtons.count) * buttonWidth + CGFloat(tabButtons.count - 1) * spacing
         let startX = (bounds.width - totalWidth) / 2
 

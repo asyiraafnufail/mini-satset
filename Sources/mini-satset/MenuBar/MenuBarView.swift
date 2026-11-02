@@ -135,7 +135,8 @@ final class MenuBarView: NSView {
 
     override func rightMouseDown(with event: NSEvent) {
         let menu = NSMenu(title: "mini-satset")
-        let titleItem = NSMenuItem(title: "mini-satset v1.0.0", action: nil, keyEquivalent: "")
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
+        let titleItem = NSMenuItem(title: "mini-satset v\(version)", action: nil, keyEquivalent: "")
         titleItem.isEnabled = false
         menu.addItem(titleItem)
         menu.addItem(NSMenuItem.separator())

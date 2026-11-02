@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME="mini-satset"
-VERSION="1.0.0"
+VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist 2>/dev/null || echo "1.1.0")
 APP_BUNDLE="${APP_NAME}.app"
 DMG_PATH="dist/${APP_NAME}-${VERSION}.dmg"
 SWIFT_FILES=$(find Sources -name "*.swift")

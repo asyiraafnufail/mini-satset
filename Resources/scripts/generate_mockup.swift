@@ -1,7 +1,7 @@
 import AppKit
 
 func generateMockup(outputPath: String) {
-    let width: CGFloat = 2400
+    let width: CGFloat = 3400
     let height: CGFloat = 1350
     let size = NSSize(width: width, height: height)
     let image = NSImage(size: size)
@@ -26,14 +26,14 @@ func generateMockup(outputPath: String) {
         NSColor(red: 0.04, green: 0.52, blue: 1.0, alpha: 0.0).cgColor
     ] as CFArray
     let blueGlow = CGGradient(colorsSpace: colorSpace, colors: blueGlowColors, locations: [0.0, 1.0])!
-    context.drawRadialGradient(blueGlow, startCenter: CGPoint(x: 1200, y: 650), startRadius: 0, endCenter: CGPoint(x: 1200, y: 650), endRadius: 750, options: [])
+    context.drawRadialGradient(blueGlow, startCenter: CGPoint(x: 1700, y: 650), startRadius: 0, endCenter: CGPoint(x: 1700, y: 650), endRadius: 900, options: [])
 
     let amberGlowColors = [
         NSColor(red: 1.0, green: 0.62, blue: 0.1, alpha: 0.16).cgColor,
         NSColor(red: 1.0, green: 0.62, blue: 0.1, alpha: 0.0).cgColor
     ] as CFArray
     let amberGlow = CGGradient(colorsSpace: colorSpace, colors: amberGlowColors, locations: [0.0, 1.0])!
-    context.drawRadialGradient(amberGlow, startCenter: CGPoint(x: 600, y: 400), startRadius: 0, endCenter: CGPoint(x: 600, y: 400), endRadius: 500, options: [])
+    context.drawRadialGradient(amberGlow, startCenter: CGPoint(x: 700, y: 400), startRadius: 0, endCenter: CGPoint(x: 700, y: 400), endRadius: 600, options: [])
 
     // 3. Header Showcase Branding
     let centerParagraph = NSMutableParagraphStyle()
@@ -54,28 +54,28 @@ func generateMockup(outputPath: String) {
         .paragraphStyle: centerParagraph,
         .kern: -1.0
     ]
-    let title = NSAttributedString(string: "mini-satset • All 3 Native Pages", attributes: titleAttrs)
+    let title = NSAttributedString(string: "mini-satset • All 5 Native Pages + Pin Mode", attributes: titleAttrs)
     title.draw(in: NSRect(x: 0, y: height - 190, width: width, height: 65))
 
     let descAttrs: [NSAttributedString.Key: Any] = [
-        .font: NSFont.systemFont(ofSize: 22, weight: .medium),
+        .font: NSFont.systemFont(ofSize: 21, weight: .medium),
         .foregroundColor: NSColor(white: 0.72, alpha: 1.0),
         .paragraphStyle: centerParagraph
     ]
-    let desc = NSAttributedString(string: "Page 1: Shelf (Clipboard)   •   Page 2: Quick Converter   •   Page 3: Screen Color Sampler", attributes: descAttrs)
+    let desc = NSAttributedString(string: "Shelf  •  Quick Converter  •  Color Sampler  •  QR Code Lab  •  Screen OCR Grabber", attributes: descAttrs)
     desc.draw(in: NSRect(x: 0, y: height - 235, width: width, height: 35))
 
-    // 4. Draw the 3 Symmetrical Panels
-    let panelW: CGFloat = 640
+    // 4. Draw the 5 Symmetrical Panels
+    let panelW: CGFloat = 580
     let panelH: CGFloat = 664
-    let spacing: CGFloat = 80
-    let totalPanelsW = 3 * panelW + 2 * spacing
+    let spacing: CGFloat = 35
+    let totalPanelsW = 5 * panelW + 4 * spacing
     let startX = (width - totalPanelsW) / 2
     let panelY: CGFloat = 170
 
-    drawPanelMockup(context: context, x: startX, y: panelY, width: panelW, height: panelH, pageIndex: 0)
-    drawPanelMockup(context: context, x: startX + panelW + spacing, y: panelY, width: panelW, height: panelH, pageIndex: 1)
-    drawPanelMockup(context: context, x: startX + 2 * (panelW + spacing), y: panelY, width: panelW, height: panelH, pageIndex: 2)
+    for i in 0..<5 {
+        drawPanelMockup(context: context, x: startX + CGFloat(i) * (panelW + spacing), y: panelY, width: panelW, height: panelH, pageIndex: i)
+    }
 
     image.unlockFocus()
 
@@ -121,12 +121,12 @@ func drawPanelMockup(context: CGContext, x: CGFloat, y: CGFloat, width: CGFloat,
     NSColor(white: 1.0, alpha: 0.08).setStroke()
     navSep.stroke()
 
-    // Navbar tabs
-    let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull"]
-    let tabW: CGFloat = 72
-    let tabH: CGFloat = 56
-    let tabSpacing: CGFloat = 16
-    let totalTabsW = 3 * tabW + 2 * tabSpacing
+    // Navbar tabs (5 pages)
+    let symbols = ["doc.on.clipboard", "arrow.2.squarepath", "eyedropper.halffull", "qrcode", "text.viewfinder"]
+    let tabW: CGFloat = 62
+    let tabH: CGFloat = 50
+    let tabSpacing: CGFloat = 10
+    let totalTabsW = CGFloat(symbols.count) * tabW + CGFloat(symbols.count - 1) * tabSpacing
     let tabStartX = x + (width - totalTabsW) / 2
     let tabY = navY + (76 - tabH) / 2
 
@@ -135,23 +135,34 @@ func drawPanelMockup(context: CGContext, x: CGFloat, y: CGFloat, width: CGFloat,
         let tabRect = NSRect(x: currentTabX, y: tabY, width: tabW, height: tabH)
 
         if i == pageIndex {
-            let activePill = NSBezierPath(roundedRect: tabRect, xRadius: 12, yRadius: 12)
+            let activePill = NSBezierPath(roundedRect: tabRect, xRadius: 10, yRadius: 10)
             NSColor(white: 1.0, alpha: 0.12).setFill()
             activePill.fill()
         }
 
-        let config = NSImage.SymbolConfiguration(pointSize: 22, weight: .semibold)
+        let config = NSImage.SymbolConfiguration(pointSize: 20, weight: .semibold)
         if let icon = NSImage(systemSymbolName: sym, accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-            let iconW: CGFloat = 26
-            let iconH: CGFloat = 26
+            let iconW: CGFloat = 24
+            let iconH: CGFloat = 24
             let iconRect = NSRect(x: currentTabX + (tabW - iconW) / 2, y: tabY + (tabH - iconH) / 2, width: iconW, height: iconH)
             icon.draw(in: iconRect, from: .zero, operation: .sourceOver, fraction: (i == pageIndex) ? 1.0 : 0.45)
         }
     }
 
-    // Page Content Rendering (@2x scaling: margin 24, cardWidth 592)
+    // Pin Button (Top right header)
+    let pinRect = NSRect(x: x + width - 56, y: tabY + 4, width: 42, height: 42)
+    let pinPath = NSBezierPath(roundedRect: pinRect, xRadius: 8, yRadius: 8)
+    NSColor(white: 1.0, alpha: 0.06).setFill()
+    pinPath.fill()
+    let pinConfig = NSImage.SymbolConfiguration(pointSize: 18, weight: .medium)
+    if let pinIcon = NSImage(systemSymbolName: "pin", accessibilityDescription: nil)?.withSymbolConfiguration(pinConfig) {
+        let pinIconRect = NSRect(x: pinRect.minX + 11, y: pinRect.minY + 11, width: 20, height: 20)
+        pinIcon.draw(in: pinIconRect, from: .zero, operation: .sourceOver, fraction: 0.55)
+    }
+
+    // Page Content Rendering (@2x scaling: margin 24, cardWidth 532)
     let contentX = x + 24
-    let contentW: CGFloat = 592
+    let contentW: CGFloat = width - 48
 
     if pageIndex == 0 {
         // === PAGE 1: SHELF ===
@@ -365,6 +376,97 @@ func drawPanelMockup(context: CGContext, x: CGFloat, y: CGFloat, width: CGFloat,
 
         // 4. Toast label
         drawFooterNotice(text: "Auto-copied #FF9F0F to clipboard!", x: contentX, y: y + 24, width: contentW)
+
+    } else if pageIndex == 3 {
+        // === PAGE 4: QR CODE LAB ===
+        // 1. Text Input row (y = y + 504, h = 52)
+        let inputRect = NSRect(x: contentX, y: y + 504, width: contentW - 130, height: 52)
+        let inputPath = NSBezierPath(roundedRect: inputRect, xRadius: 14, yRadius: 14)
+        NSColor(white: 1.0, alpha: 0.06).setFill()
+        inputPath.fill()
+        NSColor(white: 1.0, alpha: 0.15).setStroke()
+        inputPath.stroke()
+
+        let qrPlaceholder = NSAttributedString(string: "https://satset.dev/app", attributes: [
+            .font: NSFont.systemFont(ofSize: 19, weight: .medium),
+            .foregroundColor: NSColor.white
+        ])
+        qrPlaceholder.draw(at: NSPoint(x: contentX + 16, y: y + 518))
+
+        drawMiniSquareButton(x: contentX + contentW - 120, y: y + 504, size: 52, icon: "doc.on.clipboard")
+        drawMiniSquareButton(x: contentX + contentW - 58, y: y + 504, size: 52, icon: "xmark")
+
+        // 2. Center Card & QR Preview (y = y + 88, h = 396)
+        let cardRect = NSRect(x: contentX, y: y + 88, width: contentW, height: 396)
+        let cardPath = NSBezierPath(roundedRect: cardRect, xRadius: 16, yRadius: 16)
+        NSColor(white: 1.0, alpha: 0.05).setFill()
+        cardPath.fill()
+
+        // White QR backing card (240 x 240)
+        let whiteCardRect = NSRect(x: contentX + (contentW - 240) / 2, y: y + 190, width: 240, height: 240)
+        let whiteCard = NSBezierPath(roundedRect: whiteCardRect, xRadius: 16, yRadius: 16)
+        NSColor.white.setFill()
+        whiteCard.fill()
+
+        // Simulated QR pattern
+        let qrIconConfig = NSImage.SymbolConfiguration(pointSize: 170, weight: .bold)
+        if let qrSym = NSImage(systemSymbolName: "qrcode", accessibilityDescription: nil)?.withSymbolConfiguration(qrIconConfig) {
+            let qrDrawRect = NSRect(x: whiteCardRect.minX + 25, y: whiteCardRect.minY + 25, width: 190, height: 190)
+            qrSym.draw(in: qrDrawRect, from: .zero, operation: .sourceOver, fraction: 1.0)
+        }
+
+        // Action Buttons inside Card (width: 230 each, y = y + 110)
+        drawMiniActionCopyBtn(rect: NSRect(x: contentX + 24, y: y + 110, width: 230, height: 52), title: "Copy Image")
+        drawMiniActionCopyBtn(rect: NSRect(x: contentX + contentW - 254, y: y + 110, width: 230, height: 52), title: "Copy Text")
+
+        // 3. Footer notice
+        drawFooterNotice(text: "Drop image to scan • Drag QR to export", x: contentX, y: y + 24, width: contentW)
+
+    } else if pageIndex == 4 {
+        // === PAGE 5: SCREEN OCR & TEXT GRABBER ===
+        // 1. Primary Snip Button (y = y + 502, h = 56)
+        let snipRect = NSRect(x: contentX, y: y + 502, width: contentW, height: 56)
+        let snipPath = NSBezierPath(roundedRect: snipRect, xRadius: 16, yRadius: 16)
+        NSColor(red: 0.04, green: 0.52, blue: 1.0, alpha: 1.0).setFill()
+        snipPath.fill()
+
+        let centerP = NSMutableParagraphStyle()
+        centerP.alignment = .center
+        let snipText = NSAttributedString(string: "Snip Screen Text (Area)", attributes: [
+            .font: NSFont.systemFont(ofSize: 22, weight: .bold),
+            .foregroundColor: NSColor.white,
+            .paragraphStyle: centerP
+        ])
+        snipText.draw(in: NSRect(x: contentX, y: y + 515, width: contentW, height: 32))
+
+        // 2. Text Content Card (y = y + 88, h = 396)
+        let cardRect = NSRect(x: contentX, y: y + 88, width: contentW, height: 396)
+        let cardPath = NSBezierPath(roundedRect: cardRect, xRadius: 16, yRadius: 16)
+        NSColor(white: 1.0, alpha: 0.05).setFill()
+        cardPath.fill()
+
+        // OCR Result Snippet Lines
+        let ocrLines = [
+            "mini-satset v1.1.0 (Production Suite)",
+            "Pure Swift & AppKit • Zero Dependencies",
+            "Apple Vision On-Device Neural Engine",
+            "100% Offline OCR • 0.0% Idle CPU"
+        ]
+        for (idx, line) in ocrLines.enumerated() {
+            let lineY = y + 420 - CGFloat(idx) * 44
+            let lineAttr = NSAttributedString(string: line, attributes: [
+                .font: NSFont.monospacedSystemFont(ofSize: 18, weight: .regular),
+                .foregroundColor: NSColor(white: 0.92, alpha: 1.0)
+            ])
+            lineAttr.draw(at: NSPoint(x: contentX + 24, y: lineY))
+        }
+
+        // Action Buttons inside Card (Copy Text & Clear)
+        drawMiniActionCopyBtn(rect: NSRect(x: contentX + 24, y: y + 110, width: 230, height: 52), title: "Copy Text")
+        drawMiniActionCopyBtn(rect: NSRect(x: contentX + contentW - 254, y: y + 110, width: 230, height: 52), title: "Clear")
+
+        // 3. Footer notice
+        drawFooterNotice(text: "Select screen area to extract text • 100% offline", x: contentX, y: y + 24, width: contentW)
     }
 }
 

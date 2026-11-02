@@ -8,8 +8,14 @@ final class ColorSamplerViewController: NSViewController {
     private let hexLabel = NSTextField(labelWithString: "#------")
     private let rgbLabel = NSTextField(labelWithString: "rgb(-, -, -)")
     private let hslLabel = NSTextField(labelWithString: "hsl(-, -%, -%)")
-    private let toastLabel = NSTextField(labelWithString: "Click button to sample screen color")
+    private let defaultToastText = "Click button to sample screen color"
+    private lazy var toastLabel = NSTextField(labelWithString: defaultToastText)
     private let recentContainer = NSView()
+    private var toastTimer: Timer?
+
+    deinit {
+        toastTimer?.invalidate()
+    }
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 290))
@@ -93,6 +99,11 @@ final class ColorSamplerViewController: NSViewController {
         toastLabel.alignment = .center
         toastLabel.frame = NSRect(x: 12, y: 12, width: 296, height: 18)
         view.addSubview(toastLabel)
+    }
+
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        NSCursor.unhide()
     }
 
     private func makeMiniCopyButton(title: String, action: Selector) -> NSButton {
@@ -196,9 +207,14 @@ final class ColorSamplerViewController: NSViewController {
     }
 
     private func showToast(_ message: String) {
+        toastTimer?.invalidate()
         toastLabel.stringValue = message
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            self?.toastLabel.stringValue = "Click button to sample screen color"
+        toastLabel.textColor = .controlAccentColor
+
+        toastTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.toastLabel.stringValue = self.defaultToastText
+            self.toastLabel.textColor = .secondaryLabelColor
         }
     }
 }

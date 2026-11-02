@@ -95,56 +95,58 @@ final class ConverterEngine {
         completion: @escaping (Result<URL, Error>) -> Void
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let readOptions = [kCGImageSourceShouldCache: false] as CFDictionary
-            guard let imageSource = CGImageSourceCreateWithURL(sourceURL as CFURL, readOptions) else {
-                DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
-                return
-            }
+            autoreleasepool {
+                let readOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+                guard let imageSource = CGImageSourceCreateWithURL(sourceURL as CFURL, readOptions) else {
+                    DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
+                    return
+                }
 
-            guard CGImageSourceGetCount(imageSource) > 0,
-                  let image = CGImageSourceCreateImageAtIndex(imageSource, 0, readOptions) else {
-                DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
-                return
-            }
+                guard CGImageSourceGetCount(imageSource) > 0,
+                      let image = CGImageSourceCreateImageAtIndex(imageSource, 0, readOptions) else {
+                    DispatchQueue.main.async { completion(.failure(ConvertError.readFailed)) }
+                    return
+                }
 
-            let targetUTI: CFString
-            switch targetExt.lowercased() {
-            case "jpg", "jpeg":
-                targetUTI = "public.jpeg" as CFString
-            case "png":
-                targetUTI = "public.png" as CFString
-            case "heic":
-                targetUTI = "public.heic" as CFString
-            case "webp":
-                targetUTI = "org.webmproject.webp" as CFString
-            case "tiff", "tif":
-                targetUTI = "public.tiff" as CFString
-            default:
-                targetUTI = "public.png" as CFString
-            }
+                let targetUTI: CFString
+                switch targetExt.lowercased() {
+                case "jpg", "jpeg":
+                    targetUTI = "public.jpeg" as CFString
+                case "png":
+                    targetUTI = "public.png" as CFString
+                case "heic":
+                    targetUTI = "public.heic" as CFString
+                case "webp":
+                    targetUTI = "org.webmproject.webp" as CFString
+                case "tiff", "tif":
+                    targetUTI = "public.tiff" as CFString
+                default:
+                    targetUTI = "public.png" as CFString
+                }
 
-            let baseName = sourceURL.deletingPathExtension().lastPathComponent
-            let tempDir = FileManager.default.temporaryDirectory
-            let destinationURL = tempDir.appendingPathComponent("\(baseName)-converted.\(targetExt)")
+                let baseName = sourceURL.deletingPathExtension().lastPathComponent
+                let tempDir = FileManager.default.temporaryDirectory
+                let destinationURL = tempDir.appendingPathComponent("\(baseName)-converted.\(targetExt)")
 
-            try? FileManager.default.removeItem(at: destinationURL)
+                try? FileManager.default.removeItem(at: destinationURL)
 
-            guard let destination = CGImageDestinationCreateWithURL(destinationURL as CFURL, targetUTI, 1, nil) else {
-                DispatchQueue.main.async { completion(.failure(ConvertError.writeFailed)) }
-                return
-            }
+                guard let destination = CGImageDestinationCreateWithURL(destinationURL as CFURL, targetUTI, 1, nil) else {
+                    DispatchQueue.main.async { completion(.failure(ConvertError.writeFailed)) }
+                    return
+                }
 
-            var options: [CFString: Any] = [:]
-            if targetExt.lowercased() != "png" {
-                options[kCGImageDestinationLossyCompressionQuality] = quality.compressionFactor as CFNumber
-            }
+                var options: [CFString: Any] = [:]
+                if targetExt.lowercased() != "png" {
+                    options[kCGImageDestinationLossyCompressionQuality] = quality.compressionFactor as CFNumber
+                }
 
-            CGImageDestinationAddImage(destination, image, options as CFDictionary)
+                CGImageDestinationAddImage(destination, image, options as CFDictionary)
 
-            if CGImageDestinationFinalize(destination) {
-                DispatchQueue.main.async { completion(.success(destinationURL)) }
-            } else {
-                DispatchQueue.main.async { completion(.failure(ConvertError.writeFailed)) }
+                if CGImageDestinationFinalize(destination) {
+                    DispatchQueue.main.async { completion(.success(destinationURL)) }
+                } else {
+                    DispatchQueue.main.async { completion(.failure(ConvertError.writeFailed)) }
+                }
             }
         }
     }
@@ -158,57 +160,62 @@ final class ConverterEngine {
         completion: @escaping (Result<URL, Error>) -> Void
     ) {
         DispatchQueue.global(qos: .userInitiated).async {
-            let baseName = sourceURL.deletingPathExtension().lastPathComponent
-            let tempDir = FileManager.default.temporaryDirectory
-            let destinationURL = tempDir.appendingPathComponent("\(baseName)-converted.\(targetExt)")
+            autoreleasepool {
+                let baseName = sourceURL.deletingPathExtension().lastPathComponent
+                let tempDir = FileManager.default.temporaryDirectory
+                let destinationURL = tempDir.appendingPathComponent("\(baseName)-converted.\(targetExt)")
 
-            try? FileManager.default.removeItem(at: destinationURL)
+                try? FileManager.default.removeItem(at: destinationURL)
 
-            var args: [String] = []
-            switch targetExt.lowercased() {
-            case "m4a":
-                args = ["-f", "m4af", "-d", "aac"]
-                if let br = quality.bitrate {
-                    args += ["-b", "\(br)"]
+                var args: [String] = []
+                switch targetExt.lowercased() {
+                case "m4a":
+                    args = ["-f", "m4af", "-d", "aac"]
+                    if let br = quality.bitrate {
+                        args += ["-b", "\(br)"]
+                    }
+                case "wav":
+                    args = ["-f", "WAVE", "-d", "LEI16"]
+                case "caf":
+                    args = ["-f", "caff", "-d", "aac"]
+                    if let br = quality.bitrate {
+                        args += ["-b", "\(br)"]
+                    }
+                case "mp3":
+                    args = ["-f", "MPG3", "-d", ".mp3"]
+                    if let br = quality.bitrate {
+                        args += ["-b", "\(br)"]
+                    }
+                default:
+                    args = ["-f", "m4af", "-d", "aac"]
                 }
-            case "wav":
-                args = ["-f", "WAVE", "-d", "LEI16"]
-            case "caf":
-                args = ["-f", "caff", "-d", "aac"]
-                if let br = quality.bitrate {
-                    args += ["-b", "\(br)"]
+
+                args += [sourceURL.path, destinationURL.path]
+
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: "/usr/bin/afconvert")
+                process.arguments = args
+                let pipe = Pipe()
+                process.standardError = pipe
+
+                do {
+                    defer {
+                        try? pipe.fileHandleForReading.close()
+                    }
+                    try process.run()
+                    process.waitUntilExit()
+
+                    if process.terminationStatus == 0 && FileManager.default.fileExists(atPath: destinationURL.path) {
+                        DispatchQueue.main.async { completion(.success(destinationURL)) }
+                    } else {
+                        let errData = pipe.fileHandleForReading.readDataToEndOfFile()
+                        let errMsg = String(data: errData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let displayMsg = (errMsg?.isEmpty == false) ? errMsg! : "Conversion failed."
+                        DispatchQueue.main.async { completion(.failure(ConvertError.processFailed(displayMsg))) }
+                    }
+                } catch {
+                    DispatchQueue.main.async { completion(.failure(error)) }
                 }
-            case "mp3":
-                args = ["-f", "MPG3", "-d", ".mp3"]
-                if let br = quality.bitrate {
-                    args += ["-b", "\(br)"]
-                }
-            default:
-                args = ["-f", "m4af", "-d", "aac"]
-            }
-
-            args += [sourceURL.path, destinationURL.path]
-
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/afconvert")
-            process.arguments = args
-            let pipe = Pipe()
-            process.standardError = pipe
-
-            do {
-                try process.run()
-                process.waitUntilExit()
-
-                if process.terminationStatus == 0 && FileManager.default.fileExists(atPath: destinationURL.path) {
-                    DispatchQueue.main.async { completion(.success(destinationURL)) }
-                } else {
-                    let errData = pipe.fileHandleForReading.readDataToEndOfFile()
-                    let errMsg = String(data: errData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                    let displayMsg = (errMsg?.isEmpty == false) ? errMsg! : "Conversion failed."
-                    DispatchQueue.main.async { completion(.failure(ConvertError.processFailed(displayMsg))) }
-                }
-            } catch {
-                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
     }

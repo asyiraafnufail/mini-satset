@@ -49,9 +49,21 @@
 - **Recent Swatches**: Quick-access history of your last 5 sampled colors.
 - **Sampling Guard**: Hover auto-dismissal is intelligently paused while the loupe is active across monitors.
 
-### 4. Menu Bar & System Integration
+### 4. QR Code Lab (Two-Way Generator & Scanner)
+- **Live Vector Generation**: Crisp QR generation in real-time as you type or paste text (`CIQRCodeGenerator`), padded with clean quiet zone margins.
+- **Quick Clipboard & Drag Out**: Copy QR image or raw text directly to clipboard, or drag the QR image directly from the card into Finder or other apps.
+- **Image Drop Scanner**: Drop any image containing a QR code to decode instantly via CoreImage `CIDetector` and copy extracted content to clipboard.
+
+### 5. Screen OCR & Text Grabber (100% On-Device Neural Engine)
+- **Interactive Screen Area Snipping**: Snip any rectangular area of your screen using native `/usr/sbin/screencapture`.
+- **Apple Vision Framework**: Real-time on-device text recognition with language correction (`VNRecognizeTextRequest`), running entirely offline via the Apple Neural Engine.
+- **Screenshot Drag & Drop**: Drop any image or screenshot file into the drop zone to extract selectable, scrollable text instantly.
+- **Privacy First**: Zero network requests, zero telemetry, zero cloud APIs.
+
+### 6. Pin Mode & Menu Bar Integration
+- **Pin Mode (Always on Top)**: Click the pin button (`pin`/`pin.fill`) in the top-right header to keep the panel open while multitasking, dragging files across workspaces, or taking notes. When pinned, background hover polling timers stop completely (**0.0% CPU**).
 - **Zero-Delay Active Zone Monitoring**: Hover check tracks cursor presence within an expanded bounding zone, closing instantly when leaving without artificial delay.
-- **Spring-Loaded Drag Expansion**: Dragging a file over the menu bar item expands the panel while respecting your active tab (dropping into Converter or Shelf accordingly).
+- **Spring-Loaded Drag Expansion**: Dragging a file over the menu bar item expands the panel while respecting your active tab (dropping into Converter, QR, OCR, or Shelf accordingly).
 - **Right-Click Context Menu**: Right-click the status item to toggle **Launch at Login** (`SMAppService`) or quit cleanly (`Cmd+Q`).
 
 ---
@@ -80,7 +92,7 @@
 ## Installation
 
 ### Option 1: Pre-built DMG Installer (Recommended)
-1. Download `mini-satset-1.0.0.dmg` from the [Releases](https://github.com/asyiraafnufail/mini-satset/releases) page.
+1. Download `mini-satset-1.1.0.dmg` from the [Releases](https://github.com/asyiraafnufail/mini-satset/releases) page.
 2. Open the DMG and drag **mini-satset** into your **Applications** folder.
 3. Open `mini-satset` from Applications.
    > **Note on First Launch (Gatekeeper)**: Because this app is self-built without a paid Apple Developer certificate, right-click (or Control-click) `mini-satset` in Applications and select **Open**, then click **Open** in the confirmation dialog.

@@ -100,8 +100,14 @@ final class ConverterViewController: NSViewController {
         }
     }
 
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        NSCursor.unhide()
+    }
+
     func setInputFile(_ url: URL) {
         guard outputFileURL == nil else { return }
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
 
         let cat = engine.category(for: url)
         guard cat != .unsupported else {
@@ -232,7 +238,11 @@ final class ConverterViewController: NSViewController {
         alert.messageText = "Conversion Error"
         alert.informativeText = msg
         alert.alertStyle = .warning
-        alert.runModal()
+        if let win = view.window {
+            alert.beginSheetModal(for: win, completionHandler: nil)
+        } else {
+            alert.runModal()
+        }
     }
 }
 

@@ -5,6 +5,7 @@ protocol PanelControllerDelegate: AnyObject {
     func panelControllerMouseEnter(_ controller: PanelController)
     func panelControllerMouseExit(_ controller: PanelController)
     func panelControllerDidRequestClose(_ controller: PanelController)
+    func panelControllerDidRequestSnip(_ controller: PanelController)
 }
 
 final class TrackingVisualEffectView: NSVisualEffectView {
@@ -101,7 +102,7 @@ final class TrackingVisualEffectView: NSVisualEffectView {
     }
 }
 
-final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewDelegate {
+final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewDelegate, OCRViewControllerDelegate {
     weak var delegate: PanelControllerDelegate?
 
     private let panel: FloatingPanel
@@ -113,9 +114,13 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     private let converterVC = ConverterViewController()
     private let colorSamplerVC = ColorSamplerViewController()
     private let qrCodeVC = QRCodeViewController()
+    let ocrVC = OCRViewController()
 
-    private lazy var pages: [NSViewController] = [shelfVC, converterVC, colorSamplerVC, qrCodeVC]
+    private lazy var pages: [NSViewController] = [shelfVC, converterVC, colorSamplerVC, qrCodeVC, ocrVC]
     private(set) var activePageIndex: Int = 0
+    private(set) var isPinned: Bool = false
+    var onPinStateChanged: ((Bool) -> Void)?
+    private let pinButton = NSButton()
 
     // MARK: - Animation State Machine & Dedicated Timer Animator
 
@@ -137,8 +142,22 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         return colorSamplerVC.isSamplingColor
     }
 
+    var isSnippingText: Bool {
+        return ocrVC.isSnipping
+    }
+
+    var hasActiveSheet: Bool {
+        return panel.attachedSheet != nil
+    }
+
+    private var targetFrame: NSRect = .zero
+
     var currentFrame: NSRect {
-        return panel.frame
+        return targetFrame != .zero ? targetFrame : panel.frame
+    }
+
+    deinit {
+        transitionTimer?.invalidate()
     }
 
     override init() {
@@ -147,6 +166,7 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         super.init()
 
         panel.panelDelegate = self
+        ocrVC.delegate = self
         setupViews()
         pageIndicator.delegate = self
         displayPage(at: activePageIndex, animated: false)
@@ -170,6 +190,8 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
                 self.addFileToConverter(first)
             } else if self.activePageIndex == 3, let first = urls.first {
                 self.readQRCode(first)
+            } else if self.activePageIndex == 4, let first = urls.first {
+                self.processOCRImage(first)
             } else {
                 self.addFilesToShelf(urls)
             }
@@ -178,11 +200,47 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         let separator = NSBox(frame: NSRect(x: 0, y: 293, width: 320, height: 1))
         separator.boxType = .separator
 
+        setupPinButton()
+
         visualEffectView.addSubview(pageIndicator)
+        visualEffectView.addSubview(pinButton)
         visualEffectView.addSubview(separator)
         visualEffectView.addSubview(containerView)
 
         panel.contentView = visualEffectView
+    }
+
+    private func setupPinButton() {
+        pinButton.frame = NSRect(x: 282, y: 300, width: 26, height: 26)
+        pinButton.isBordered = false
+        pinButton.wantsLayer = true
+        pinButton.layer?.cornerRadius = 6
+        pinButton.target = self
+        pinButton.action = #selector(handlePinToggle)
+        updatePinUI()
+    }
+
+    @objc private func handlePinToggle() {
+        isPinned.toggle()
+        updatePinUI()
+        onPinStateChanged?(isPinned)
+    }
+
+    private func updatePinUI() {
+        let config = NSImage.SymbolConfiguration(pointSize: 11, weight: .semibold)
+        if isPinned {
+            pinButton.image = NSImage(systemSymbolName: "pin.fill", accessibilityDescription: "Unpin panel")?
+                .withSymbolConfiguration(config)
+            pinButton.contentTintColor = .controlAccentColor
+            pinButton.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+            pinButton.toolTip = "Pinned: Panel stays open. Click to unpin."
+        } else {
+            pinButton.image = NSImage(systemSymbolName: "pin", accessibilityDescription: "Pin panel")?
+                .withSymbolConfiguration(config)
+            pinButton.contentTintColor = .secondaryLabelColor
+            pinButton.layer?.backgroundColor = NSColor.clear.cgColor
+            pinButton.toolTip = "Unpinned: Panel closes on mouse exit. Click to pin."
+        }
     }
 
     // MARK: - FloatingPanelDelegate
@@ -209,15 +267,21 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
         newVC.view.frame = containerView.bounds
         newVC.view.alphaValue = 1.0
         containerView.addSubview(newVC.view)
+        newVC.viewWillAppear()
+
+        if newIndex == 0 {
+            shelfVC.refreshUI()
+        }
     }
 
-    private func displayPage(at index: Int, animated: Bool) {
+    func displayPage(at index: Int, animated: Bool) {
         activePageIndex = index
         pageIndicator.selectTab(at: index, notify: false)
         containerView.subviews.forEach { $0.removeFromSuperview() }
         let currentVC = pages[index]
         currentVC.view.frame = containerView.bounds
         containerView.addSubview(currentVC.view)
+        currentVC.viewWillAppear()
     }
 
     func switchToShelfPage() {
@@ -232,6 +296,19 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
     func readQRCode(_ url: URL) {
         displayPage(at: 3, animated: false)
         qrCodeVC.readQR(from: url)
+    }
+
+    func processOCRImage(_ url: URL) {
+        displayPage(at: 4, animated: false)
+        ocrVC.processImageFile(url)
+    }
+
+    func handleOCRResult(_ text: String?) {
+        ocrVC.handleSnippedResult(text)
+    }
+
+    func ocrViewControllerDidRequestSnip(_ controller: OCRViewController) {
+        delegate?.panelControllerDidRequestSnip(self)
     }
 
     func addFilesToShelf(_ urls: [URL]) {
@@ -269,10 +346,16 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
 
         let finalFrame = NSRect(x: originX, y: targetY, width: panelWidth, height: panelHeight)
         let startY = targetY + 6.0
+        targetFrame = finalFrame
 
         panel.setFrame(NSRect(x: originX, y: startY, width: panelWidth, height: panelHeight), display: false)
         panel.alphaValue = 0.0
         panel.orderFrontRegardless()
+
+        pages[activePageIndex].viewWillAppear()
+        if activePageIndex == 0 {
+            shelfVC.refreshUI()
+        }
 
         let duration: Double = 0.20
         let startTime = CACurrentMediaTime()
@@ -339,12 +422,22 @@ final class PanelController: NSObject, FloatingPanelDelegate, PageIndicatorViewD
                 self.transitionTimer = nil
                 self.panel.orderOut(nil)
                 self.panel.alphaValue = 1.0
+                self.targetFrame = .zero
                 self.state = .closed
                 completion?()
             }
         }
         RunLoop.main.add(timer, forMode: .common)
         transitionTimer = timer
+    }
+
+    func hideInstantly() {
+        transitionTimer?.invalidate()
+        transitionTimer = nil
+        targetFrame = .zero
+        panel.orderOut(nil)
+        panel.alphaValue = 1.0
+        state = .closed
     }
 
     // Apple Cubic Ease-In-Out: smooth acceleration and deceleration

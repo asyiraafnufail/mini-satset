@@ -66,7 +66,13 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
     private let pasteBtn = NSButton()
     private let addBtn = NSButton()
     private let textContainerView = NSView()
-    private let toastLabel = NSTextField(labelWithString: "Items auto-destruct in 5 minutes")
+    private let defaultToastText = "Items auto-destruct in 5 minutes"
+    private lazy var toastLabel = NSTextField(labelWithString: defaultToastText)
+    private var toastTimer: Timer?
+
+    deinit {
+        toastTimer?.invalidate()
+    }
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 290))
@@ -176,6 +182,7 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
             if !trimmed.isEmpty {
                 store.addText(trimmed)
                 inputField.stringValue = ""
+                inputField.currentEditor()?.string = ""
                 refreshUI()
                 NSCursor.unhide()
                 showTemporaryToast("Pasted to shelf!")
@@ -190,6 +197,7 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
         if !text.isEmpty {
             store.addText(text)
             inputField.stringValue = ""
+            inputField.currentEditor()?.string = ""
             refreshUI()
         }
         view.window?.makeFirstResponder(nil)
@@ -211,6 +219,7 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
     // MARK: - UI Refresh
 
     func refreshUI() {
+        store.purgeExpired()
         fileDropView.updateFiles(store.fileItems)
         refreshTextList()
     }
@@ -298,9 +307,14 @@ final class ShelfViewController: NSViewController, NSTextFieldDelegate {
     }
 
     private func showTemporaryToast(_ message: String) {
+        toastTimer?.invalidate()
         toastLabel.stringValue = message
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            self?.toastLabel.stringValue = "Items auto-destruct in 5 minutes"
+        toastLabel.textColor = .controlAccentColor
+
+        toastTimer = Timer.scheduledTimer(withTimeInterval: 1.8, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            self.toastLabel.stringValue = self.defaultToastText
+            self.toastLabel.textColor = .secondaryLabelColor
         }
     }
 }

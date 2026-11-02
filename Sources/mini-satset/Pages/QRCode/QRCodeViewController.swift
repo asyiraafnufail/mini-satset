@@ -30,7 +30,11 @@ final class QRCodeInputField: NSTextField {
                 if let str = NSPasteboard.general.string(forType: .string) {
                     let trimmed = str.trimmingCharacters(in: .whitespacesAndNewlines)
                     if !trimmed.isEmpty {
-                        stringValue = trimmed
+                        if let editor = currentEditor() as? NSTextView {
+                            editor.string = trimmed
+                        } else {
+                            stringValue = trimmed
+                        }
                         onTextChange?(trimmed)
                         NSCursor.unhide()
                         return true
@@ -47,7 +51,7 @@ final class QRCodeInputField: NSTextField {
             } else if key == "x" {
                 if let editor = currentEditor() as? NSTextView {
                     editor.cut(nil)
-                    onTextChange?(stringValue)
+                    onTextChange?(editor.string)
                     return true
                 }
             }
@@ -66,7 +70,6 @@ final class QRCodeInputField: NSTextField {
 final class QRCodeCardView: NSView, NSDraggingSource {
     var onFileDropped: ((URL) -> Void)?
     var currentImage: NSImage?
-    var tempExportURL: URL?
 
     private let emptyContainer = NSView()
     private let activeContainer = NSView()
@@ -163,25 +166,32 @@ final class QRCodeCardView: NSView, NSDraggingSource {
         self.currentImage = image
         self.qrImageView.image = image
         showEmpty(false)
-        prepareTempExport(image)
     }
 
-    private func prepareTempExport(_ image: NSImage) {
-        guard let tiff = image.tiffRepresentation,
-              let rep = NSBitmapImageRep(data: tiff),
-              let png = rep.representation(using: .png, properties: [:]) else { return }
-
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("mini-satset-qr.png")
-        try? png.write(to: tempURL)
-        self.tempExportURL = tempURL
-    }
-
-    // Drag Out to Finder / External Apps
+    // Drag Out to Finder / External Apps (Lazy Export on actual drag gesture)
     override func mouseDragged(with event: NSEvent) {
-        guard let url = tempExportURL, !activeContainer.isHidden else { return }
-        let dragItem = NSDraggingItem(pasteboardWriter: url as NSURL)
-        let dragImage = currentImage ?? NSImage(systemSymbolName: "qrcode", accessibilityDescription: nil)!
-        dragItem.setDraggingFrame(NSRect(origin: event.locationInWindow, size: NSSize(width: 48, height: 48)), contents: dragImage)
+        guard let image = currentImage, !activeContainer.isHidden else { return }
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("mini-satset-qr.png")
+
+        let wroteSuccessfully = autoreleasepool { () -> Bool in
+            guard let tiff = image.tiffRepresentation,
+                  let rep = NSBitmapImageRep(data: tiff),
+                  let png = rep.representation(using: .png, properties: [:]) else { return false }
+            do {
+                try png.write(to: tempURL)
+                return true
+            } catch {
+                return false
+            }
+        }
+        guard wroteSuccessfully else { return }
+
+        let dragItem = NSDraggingItem(pasteboardWriter: tempURL as NSURL)
+        let dragIcon = NSImage(size: NSSize(width: 48, height: 48), flipped: false) { rect in
+            image.draw(in: rect)
+            return true
+        }
+        dragItem.setDraggingFrame(NSRect(origin: event.locationInWindow, size: dragIcon.size), contents: dragIcon)
         beginDraggingSession(with: [dragItem], event: event, source: self)
     }
 
@@ -226,6 +236,11 @@ final class QRCodeViewController: NSViewController, NSTextFieldDelegate {
 
     private var toastResetTimer: Timer?
     private var currentQRImage: NSImage?
+    private var lastGeneratedText: String = ""
+
+    deinit {
+        toastResetTimer?.invalidate()
+    }
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 290))
@@ -336,6 +351,9 @@ final class QRCodeViewController: NSViewController, NSTextFieldDelegate {
 
     private func generateQR(from text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != lastGeneratedText else { return }
+        lastGeneratedText = trimmed
+
         guard !trimmed.isEmpty else {
             currentQRImage = nil
             cardView.showEmpty(true)
@@ -355,8 +373,10 @@ final class QRCodeViewController: NSViewController, NSTextFieldDelegate {
     // MARK: - QR Decoding
 
     func readQR(from url: URL) {
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
         if let decoded = engine.detectQRCode(from: url) {
             inputField.stringValue = decoded
+            inputField.currentEditor()?.string = decoded
             generateQR(from: decoded)
 
             NSPasteboard.general.clearContents()
@@ -380,6 +400,7 @@ final class QRCodeViewController: NSViewController, NSTextFieldDelegate {
             let trimmed = str.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmed.isEmpty {
                 inputField.stringValue = trimmed
+                inputField.currentEditor()?.string = trimmed
                 generateQR(from: trimmed)
                 showToast("Pasted to QR!")
                 return
@@ -390,14 +411,22 @@ final class QRCodeViewController: NSViewController, NSTextFieldDelegate {
 
     @objc private func handleClear() {
         inputField.stringValue = ""
+        inputField.currentEditor()?.string = ""
         generateQR(from: "")
         showToast("Cleared")
     }
 
     @objc private func handleCopyImage() {
         guard let qr = currentQRImage else { return }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.writeObjects([qr])
+        autoreleasepool {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.writeObjects([qr])
+            if let tiff = qr.tiffRepresentation,
+               let rep = NSBitmapImageRep(data: tiff),
+               let png = rep.representation(using: .png, properties: [:]) {
+                NSPasteboard.general.setData(png, forType: .png)
+            }
+        }
         showToast("QR image copied to clipboard!")
     }
 

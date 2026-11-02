@@ -81,6 +81,7 @@ final class ShelfItemStore {
 
     func addFileURL(_ url: URL) {
         purgeExpired()
+        guard FileManager.default.fileExists(atPath: url.path) else { return }
         // Check duplicate
         if !fileItems.contains(where: { $0.url == url }) {
             fileItems.insert(ShelfFile(url: url), at: 0)
@@ -105,6 +106,6 @@ final class ShelfItemStore {
 
     func purgeExpired() {
         textItems.removeAll { $0.isExpired }
-        fileItems.removeAll { $0.isExpired }
+        fileItems.removeAll { $0.isExpired || !FileManager.default.fileExists(atPath: $0.url.path) }
     }
 }
